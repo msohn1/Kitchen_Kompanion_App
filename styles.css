@@ -36,7 +36,7 @@ body {
 .tablink img {
   width: 28px;
   height: 28px;
-  margin-bottom: -7px;
+  margin-bottom: 4px;
 }
 
 .tablink:hover {
