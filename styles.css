@@ -36,7 +36,14 @@ body {
 .tablink img {
   width: 28px;
   height: 28px;
-  margin-bottom: 4px;
+}
+
+.icon-text {
+    margin-bottom: -12px;
+}
+
+.icon-lr {
+    margin-bottom: 4px;
 }
 
 .tablink:hover {
