@@ -1,49 +1,48 @@
-#app {
+.app {
+    margin: auto;
     width: 640px;
     height: 960px;
     overflow: hidden;
     position: relative;
-}
+    background: pink;
+    font-family: Arial, sans-serif;
 
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: pink;
 }
 
 .tabcontent {
-  display: none;
-  padding: 20px;
-  height: calc(100vh - 60px); /* leave space for tabbar */
-  overflow-y: auto; /* scrolling allowed */
+    width: 100%;
+    height: calc(100% - 70px);
+    overflow-y: auto;
+    padding: 15px;
+    box-sizing: border-box;
 }
 
 .tabbar {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  display: flex;
-  background: navy;
-  height: 70px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    background: navy;
+    height: 70px;
 }
 
 .tablink {
-  flex: 1;
-  border: none;
-  background: navy;
-  color: yellow;
-  font-size: 12px;
-  font-weight: bold;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+    flex: 1;
+    border: none;
+    background: navy;
+    color: yellow;
+    font-size: 12px;
+    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .tablink img {
-  width: 28px;
-  height: 28px;
-  
+    width: 28px;
+    height: 28px;
 }
 
 .icon-text {
@@ -71,13 +70,13 @@ body {
 }
 
 .tablink:hover {
-  background: gray;
+    background: gray;
 }
 
 .lower-right {
-  position: absolute;
-  bottom: 70px; /* above tabbar */
-  right: 20px;
+    position: absolute;
+    bottom: 70px; /* above tabbar */
+    right: 20px;
 }
 
 .color-box {
@@ -104,21 +103,21 @@ body {
 }
 
 .profile {
-  text-align: center;
+    text-align: center;
 }
 
 .profile img {
-  width: 100px;
-  cursor: pointer;
+    width: 100px;
+    cursor: pointer;
 }
 
 .alert {
-  background: red;
-  color: white;
-  padding: 10px;
-  margin-top: 10px;
+    background: red;
+    color: white;
+    padding: 10px;
+    margin-top: 10px;
 }
 
 .hidden {
-  display: none;
+    display: none;
 }
