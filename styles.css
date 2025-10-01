@@ -46,6 +46,22 @@ body {
     margin-bottom: 4px;
 }
 
+.icon-colors {
+    margin-bottom: 4px;
+}
+
+.icon-profile {
+    margin-bottom: 4px;
+}
+
+.icon-choices {
+    margin-bottom: 4px;
+}
+
+.icon-todo {
+    margin-bottom: 4px
+}
+
 .tablink:hover {
   background: darkblue;
 }
