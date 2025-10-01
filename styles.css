@@ -36,6 +36,7 @@ body {
 .tablink img {
   width: 28px;
   height: 28px;
+  
 }
 
 .icon-text {
@@ -72,14 +73,27 @@ body {
   right: 20px;
 }
 
+.color-box {
+    width: 80%;
+    margin: 0 auto;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 2px 0;
+}
+
+.color-box + .color-box {
+    margin-top: -1px;
+}
+
 .line1 {
-  color: yellow;
-  background: black;
+    color: yellow;
+    background: black;
 }
 
 .line2 {
-  color: purple;
-  background: yellow;
+    color: purple;
+    background: yellow;
 }
 
 .profile {
