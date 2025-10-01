@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabbed App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <div id="Text" class="tabcontent">
+        <h2>-Text Screen-</h2>
+        <p>Please note that this font size is too small to read easily on this device for many...</p>
+        <p>Please note that this font size is too small to read easily on this device for many...</p>
+        <p>Please note that this font size is too small to read easily on this device for many...</p>
+        <p>Please note that this font size is too small to read easily on this device for many...</p>
+        <p>Please note that this font size is too small to read easily on this device for many...</p>
+    </div>
+
+    <div id="LR" class="tabcontent">
+        <h2>-Text in Lower Right-</h2>
+        <div class="lower-right">Down Here</div>
+    </div>
+
+    <div id="Colors" class="tabcontent">
+        <h2>-Colors Example-</h2>
+        <p class="line1">Hello There</p>
+        <p class="line2">Hi Again</p>
+    </div>
+
+    <div id="Profile" class="tabcontent">
+        <h2>-User Profile-</h2>
+        <div class="profile">
+            <img src="smiley.png" alt="Profile Image" id="profileImg">
+            <p><b>Smiley J. Smile</b></p>
+            <div id="alert" class="alert hidden">
+                <strong>Warning!</strong> Do not click on the profile image.
+            <button onclick="closeAlert()">×</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="Choices" class="tabcontent">
+        <h2>-Choices Screen-</h2>
+        <form>
+            <p>Camera Type #1:</p>
+            <input type="radio" name="camera1" value="dSLR" checked> dSLR<br>
+            <input type="radio" name="camera1" value="Mirrorless"> Mirrorless<br><br>
+
+            <label for="camera2">Camera Type #2:</label>
+            <select id="camera2">
+                <option>dSLR</option>
+                <option>Mirrorless</option>
+            </select><br><br>
+        <button type="button" onclick="showChoices()">Print something based on above choices...</button>
+    
+    </form>
+        <p id="choiceOutput"></p>
+    </div>
+
+    <div id="ToDo" class="tabcontent">
+        <h2>-To Do List-</h2>
+        <input type="text" id="todoInput" placeholder="New entry...">
+        <button onclick="addItem()">Add</button>
+        <ul id="todoList"></ul>
+    </div>
+
+    <div class="tabbar">
+        <button class="tablink" onclick="openTab('Text')">
+            <img src="icons/scroll.png" alt="Text"><br>Text</button>
+        <button class="tablink" onclick="openTab('LR')">LR</button>
+        <button class="tablink" onclick="openTab('Colors')">Colors</button>
+        <button class="tablink" onclick="openTab('Profile')">Profile</button>
+        <button class="tablink" onclick="openTab('Choices')">Choices</button>
+        <button class="tablink" onclick="openTab('ToDo')">ToDo</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

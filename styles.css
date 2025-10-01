@@ -1,0 +1,80 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: pink;
+}
+
+.tabcontent {
+  display: none;
+  padding: 20px;
+  height: calc(100vh - 60px); /* leave space for tabbar */
+  overflow-y: auto; /* scrolling allowed */
+}
+
+.tabbar {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  display: flex;
+  background: navy;
+  height: 70px;
+}
+
+.tablink {
+  flex: 1;
+  border: none;
+  background: navy;
+  color: yellow;
+  font-size: 12px;
+  font-weight: bold;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.tablink img {
+  width: 28px;
+  height: 28px;
+  margin-bottom: -7px;
+}
+
+.tablink:hover {
+  background: darkblue;
+}
+
+.lower-right {
+  position: absolute;
+  bottom: 70px; /* above tabbar */
+  right: 20px;
+}
+
+.line1 {
+  color: yellow;
+  background: black;
+}
+
+.line2 {
+  color: purple;
+  background: yellow;
+}
+
+.profile {
+  text-align: center;
+}
+
+.profile img {
+  width: 100px;
+  cursor: pointer;
+}
+
+.alert {
+  background: red;
+  color: white;
+  padding: 10px;
+  margin-top: 10px;
+}
+
+.hidden {
+  display: none;
+}
