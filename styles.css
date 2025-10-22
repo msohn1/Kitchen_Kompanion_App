@@ -18,7 +18,7 @@
     overflow: hidden;
     position: relative;
     background: var(--bg);
-    color: var(--text)
+    color: var(--text);
     /* font-family: Arial, sans-serif; */
 }
 
@@ -59,15 +59,6 @@
     width: 28px;
     height: 28px;
     filter: brightness(0) invert(1)
-}
-
-.icon-text,
-.icon-lr,
-.icon-colors,
-.icon-profile,
-.icon-choices,
-.icon-todo {
-  margin: 0;
 }
 
 .lower-right {

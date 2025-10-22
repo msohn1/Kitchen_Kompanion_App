@@ -4,7 +4,7 @@ function openTab(tabName) {
     document.getElementById(tabName).style.display = "block";
 }
 
-openTab("Text");
+openTab("home");
 
 document.getElementById("profileImg").onclick = () => {
     document.getElementById("alert").classList.remove("hidden");
@@ -40,6 +40,3 @@ function addItem() {
     input.value = "";
 }
 
-window.onload = function() {
-  openTab('home');
-};
