@@ -215,5 +215,17 @@ document.getElementById("addForm").addEventListener("submit", (e) => {
   hideAddModal();
 });
 
+function toggleExpand(selectedCard) {
+  const allCards = document.querySelectorAll('.recipe-card');
+
+  allCards.forEach(card => {
+    if (card !== selectedCard) {
+      card.classList.remove('expanded');
+    }
+  });
+
+  selectedCard.classList.toggle('expanded');
+}
+
 /* ---------- Initial paint on load ---------- */
 renderInventory();

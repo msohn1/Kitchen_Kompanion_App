@@ -52,12 +52,12 @@
     <div id="inventory" class="tabcontent">
         <h2>Inventory</h2>
         <div class="inv-toolbar">
-  <button class="btn" id="filterAll">All</button>
-  <button class="btn" id="filterLow">Low stock</button>
-  <button class="btn" id="filterExpiring">Expiring</button>
-  <input id="invSearch" type="search" placeholder="Search items…" />
-  <button class="btn accent" id="openAddModal">+ Add Item</button>
-</div>
+        <button class="btn" id="filterAll">All</button>
+        <button class="btn" id="filterLow">Low stock</button>
+        <button class="btn" id="filterExpiring">Expiring</button>
+        <input id="invSearch" type="search" placeholder="Search items…" />
+        <button class="btn accent" id="openAddModal">+ Add Item</button>
+    </div>
 
 <div class="inv-wrap">
   <table class="inv-table" id="invTable">
@@ -78,9 +78,93 @@
 </div>
     </div>
 
-    <div id="recipes" class="tabcontent">
-        <h2>Nothing here yet</h2>
+<div id="recipes" class="tabcontent">
+      <h2>Suggested Recipes</h2>
+
+    <!-- Recipe 1 -->
+    <div class="recipe-card" onclick="toggleExpand(this)">
+      <div class="card-header">
+        <h3>Recipe 1: Breakfast Sandwich</h3>
+        <button class="toggle-btn">+</button>
+      </div>
+      <div class="card-content">
+        <div class="ingredients">
+          <h4>Ingredients</h4>
+          <ul>
+            <li>2 slices of bread</li>
+            <li>1 egg</li>
+            <li>2 slices of bacon</li>
+            <li>1 slice of cheese</li>
+          </ul>
+        </div>
+        <div class="steps">
+          <h4>Steps</h4>
+          <ol>
+            <li>Cook bacon until crispy and set aside.</li>
+            <li>Fry an egg to your liking.</li>
+            <li>Toast the bread slices.</li>
+            <li>Assemble sandwich with egg, bacon, and cheese.</li>
+          </ol>
+        </div>
+      </div>
     </div>
+
+    <!-- Recipe 2 -->
+    <div class="recipe-card" onclick="toggleExpand(this)">
+      <div class="card-header">
+        <h3>Recipe 2: Garlic Chicken Bowl</h3>
+        <button class="toggle-btn">+</button>
+      </div>
+      <div class="card-content">
+        <div class="ingredients">
+          <h4>Ingredients</h4>
+          <ul>
+            <li>1 chicken breast</li>
+            <li>1 cup cooked rice</li>
+            <li>2 cloves garlic</li>
+            <li>1 tbsp soy sauce</li>
+          </ul>
+        </div>
+        <div class="steps">
+          <h4>Steps</h4>
+          <ol>
+            <li>Dice chicken and sauté with minced garlic.</li>
+            <li>Add soy sauce and cook until browned.</li>
+            <li>Serve over a bowl of rice.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recipe 3 -->
+    <div class="recipe-card" onclick="toggleExpand(this)">
+      <div class="card-header">
+        <h3>Recipe 3: Mozzarella Toast</h3>
+        <button class="toggle-btn">+</button>
+      </div>
+      <div class="card-content">
+        <div class="ingredients">
+          <h4>Ingredients</h4>
+          <ul>
+            <li>2 slices of bread</li>
+            <li>1 tomato</li>
+            <li>2 slices mozzarella</li>
+            <li>Olive oil</li>
+          </ul>
+        </div>
+        <div class="steps">
+          <h4>Steps</h4>
+          <ol>
+            <li>Brush bread with olive oil and toast lightly.</li>
+            <li>Add tomato and mozzarella slices on top.</li>
+            <li>Toast again until cheese melts.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 
     <div id="setting" class="tabcontent">
         <h2>Nothing here yet</h2>
