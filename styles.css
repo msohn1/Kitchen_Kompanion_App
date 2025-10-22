@@ -19,7 +19,7 @@
     position: relative;
     background: var(--bg);
     color: var(--text);
-    /* font-family: Arial, sans-serif; */
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .tabcontent {
@@ -45,7 +45,7 @@
     border: none;
     background: transparent;
     color: var(--white);
-    font-size: 12px;
+    font-size: 14px;
     font-weight: bold;
     display: flex;
     flex-direction: column;

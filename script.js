@@ -40,3 +40,12 @@ function addItem() {
     input.value = "";
 }
 
+const today = new Date();
+
+const formattedDate = today.toLocaleDateString("en-US", {
+  year: "numeric",
+  month: "long",
+  day: "numeric"
+});
+
+document.getElementById("today").textContent = formattedDate;
