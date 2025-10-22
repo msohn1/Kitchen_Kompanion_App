@@ -61,12 +61,6 @@
     filter: brightness(0) invert(1)
 }
 
-.lower-right {
-    position: absolute;
-    bottom: 70px; /* above tabbar */
-    right: 20px;
-}
-
 .color-box {
     width: 80%;
     margin: 0 auto;
@@ -106,6 +100,35 @@
     margin-top: 10px;
 }
 
-.hidden {
-    display: none;
+/* Inventory UI */
+.inv-toolbar {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px;
 }
+.inv-toolbar .btn { padding: 8px 12px; border-radius: 10px; border: 1px solid #e5e7eb; background: #fff; cursor: pointer; }
+.inv-toolbar .btn:hover { filter: brightness(0.97); }
+.inv-toolbar .btn.accent { background: var(--accent); color: var(--black); border-color: transparent; }
+#invSearch { flex: 1 1 220px; padding: 8px 10px; border: 1px solid #e5e7eb; border-radius: 10px; }
+
+.inv-wrap { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden; }
+.inv-table { width: 100%; border-collapse: collapse; }
+.inv-table thead th { text-align: left; background: #f3f4f6; font-weight: 600; padding: 10px; font-size: 14px; }
+.inv-table td { padding: 10px; border-top: 1px solid #e5e7eb; vertical-align: middle; font-size: 14px; }
+.inv-table .num { text-align: right; }
+.badge { padding: 2px 8px; border-radius: 999px; font-size: 12px; }
+.badge.low { background: #FEF3C7; }
+.badge.exp { background: #FEE2E2; }
+
+.muted { color: var(--muted); font-size: 14px; padding: 12px; }
+
+/* Modal */
+.modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.45); z-index: 1000; }
+.modal.show { display: flex; }
+.modal-card { width: min(520px, 92%); background: #fff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.2); padding: 16px; }
+.modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.icon-btn { border: none; background: transparent; font-size: 24px; line-height: 1; cursor: pointer; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.grid label { display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+.grid input { padding: 8px 10px; border: 1px solid #e5e7eb; border-radius: 10px; }
+.modal-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px; }
+
+

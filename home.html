@@ -46,17 +46,36 @@
     </div>
 
     <div id="shopping" class="tabcontent">
-        <h2>-Text Screen-</h2>
-        <p>Please note that this font size is too small to read easily on this device for many...</p>
-        <p>Please note that this font size is too small to read easily on this device for many...</p>
-        <p>Please note that this font size is too small to read easily on this device for many...</p>
-        <p>Please note that this font size is too small to read easily on this device for many...</p>
-        <p>Please note that this font size is too small to read easily on this device for many...</p>
+        <h2>Shopping List</h2>
     </div>
 
     <div id="inventory" class="tabcontent">
-        <h2>-Text in Lower Right-</h2>
-        <div class="lower-right">Down Here</div>
+        <h2>Inventory</h2>
+        <div class="inv-toolbar">
+  <button class="btn" id="filterAll">All</button>
+  <button class="btn" id="filterLow">Low stock</button>
+  <button class="btn" id="filterExpiring">Expiring</button>
+  <input id="invSearch" type="search" placeholder="Search items…" />
+  <button class="btn accent" id="openAddModal">+ Add Item</button>
+</div>
+
+<div class="inv-wrap">
+  <table class="inv-table" id="invTable">
+    <thead>
+      <tr>
+        <th>Item</th>
+        <th class="num">Qty</th>
+        <th>Unit</th>
+        <th class="num">Min</th>
+        <th>Expiry</th>
+        <th class="num">Days</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="invBody"></tbody>
+  </table>
+  <p id="invEmpty" class="muted hidden">No items to show.</p>
+</div>
     </div>
 
     <div id="recipes" class="tabcontent">
@@ -77,30 +96,44 @@
         </div>
     </div>
 
-    <div id="Choices" class="tabcontent">
-        <h2>-Choices Screen-</h2>
-        <form>
-            <p>Camera Type #1:</p>
-            <input type="radio" name="camera1" value="dSLR" checked> dSLR<br>
-            <input type="radio" name="camera1" value="Mirrorless"> Mirrorless<br><br>
+    <!-- Add Item Modal -->
+<div class="modal" id="addModal" aria-hidden="true">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>Add Inventory Item</h3>
+      <button class="icon-btn" id="closeAddModal" aria-label="Close">×</button>
+    </div>
 
-            <label for="camera2">Camera Type #2:</label>
-            <select id="camera2">
-                <option>dSLR</option>
-                <option>Mirrorless</option>
-            </select><br><br>
-        <button type="button" onclick="showChoices()">Print something based on above choices...</button>
-    
+    <form id="addForm" class="grid">
+      <label>
+        <span>Name</span>
+        <input required name="name" type="text" placeholder="e.g., Milk" />
+      </label>
+      <label>
+        <span>Quantity</span>
+        <input required name="qty" type="number" min="0" step="0.01" />
+      </label>
+      <label>
+        <span>Unit</span>
+        <input name="unit" type="text" placeholder="e.g., L, pcs" />
+      </label>
+      <label>
+        <span>Min qty</span>
+        <input required name="minQty" type="number" min="0" step="0.01" />
+      </label>
+      <label>
+        <span>Expiry</span>
+        <input name="expiry" type="date" />
+      </label>
+
+      <div class="modal-actions">
+        <button type="button" class="btn" id="cancelAdd">Cancel</button>
+        <button type="submit" class="btn accent">Save</button>
+      </div>
     </form>
-        <p id="choiceOutput"></p>
-    </div>
+  </div>
+</div>
 
-    <div id="ToDo" class="tabcontent">
-        <h2>-To Do List-</h2>
-        <input type="text" id="todoInput" placeholder="New entry...">
-        <button onclick="addItem()">Add</button>
-        <ul id="todoList"></ul>
-    </div>
 
     <div class="tabbar">
         <button class="tablink" onclick="openTab('shopping')">
@@ -123,5 +156,6 @@
 </div>
 
     <script src="script.js"></script>
+
 </body>
 </html>
