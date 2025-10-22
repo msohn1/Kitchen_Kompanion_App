@@ -10,7 +10,12 @@
 
 <body>
 <div class = "app">
-    <div id="Text" class="tabcontent">
+    <div id="home" class="tabcontent">
+        <h2>-Home Page-</h2>
+        <p>HOME</p>
+    </div>
+
+    <div id="shopping" class="tabcontent">
         <h2>-Text Screen-</h2>
         <p>Please note that this font size is too small to read easily on this device for many...</p>
         <p>Please note that this font size is too small to read easily on this device for many...</p>
@@ -19,18 +24,18 @@
         <p>Please note that this font size is too small to read easily on this device for many...</p>
     </div>
 
-    <div id="LR" class="tabcontent">
+    <div id="inventory" class="tabcontent">
         <h2>-Text in Lower Right-</h2>
         <div class="lower-right">Down Here</div>
     </div>
 
-    <div id="Colors" class="tabcontent">
+    <div id="recipes" class="tabcontent">
         <h2>-Colors Example-</h2>
         <p class="color-box line1">Hello There</p>
         <p class="color-box line2">Hi Again</p>
     </div>
 
-    <div id="Profile" class="tabcontent">
+    <div id="setting" class="tabcontent">
         <h2>-User Profile-</h2>
         <div class="profile">
             <img src="icons/happiness.png" alt="Profile Image" id="profileImg">
@@ -68,23 +73,22 @@
     </div>
 
     <div class="tabbar">
-        <button class="tablink" onclick="openTab('Text')">
-            <img src="icons/shopping-cart.png" class = "icon-text" alt="Text"><br>Text</button>
+        <button class="tablink" onclick="openTab('shopping')">
+            <img src="icons/shopping-cart.png" class = "icon-text" alt="shopping"><br>Shopping</button>
 
-        <button class="tablink" onclick="openTab('LR')">
-            <img src="icons/fridge.png" class = "icon-lr" alt="LR">LR</button>
+        <button class="tablink" onclick="openTab('inventory')">
+            <img src="icons/fridge.png" class = "icon-lr" alt="inventory">Inventory</button>
 
-        <button class="tablink" onclick="openTab('Colors')">
-            <img src="icons/cookbook.png" class = "icon-colors" alt="Colors">Colors</button>
+        <button class="tablink" onclick="openTab('home')">
+            <img src="icons/home.png" class="icon-home" alt="home">Home
+        </button>
 
-        <button class="tablink" onclick="openTab('Profile')">
-            <img src="icons/cogwheel.png" class = "icon-profile" alt="Profile">Profile</button>
+        <button class="tablink" onclick="openTab('recipes')">
+            <img src="icons/cookbook.png" class = "icon-colors" alt="recipes">Recipes</button>
 
-        <!-- <button class="tablink" onclick="openTab('Choices')">
-            <img src="icons/ideas.png" class = "icon-choices" alt="Choice">Choice</button>
+        <button class="tablink" onclick="openTab('setting')">
+            <img src="icons/cogwheel.png" class = "icon-profile" alt="Profile">Setting</button>
 
-        <button class="tablink" onclick="openTab('ToDo')">
-            <img src="icons/to-do-list.png" class = "icon-todo" alt="ToDo">ToDo</button> -->
     </div>
 </div>
 

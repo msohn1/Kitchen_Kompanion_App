@@ -39,3 +39,7 @@ function addItem() {
     document.getElementById("todoList").appendChild(li);
     input.value = "";
 }
+
+window.onload = function() {
+  openTab('home');
+};

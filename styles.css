@@ -1,12 +1,25 @@
+:root {
+    --bg: #F9FAFB;
+    --text: #0F172A;
+    --muted: #374151;
+    --brand-700: #1E40AF;
+    --brand-800: #16358C;
+    --brand-600: #0B3D91;
+    --accent: #F59E0B;
+    --danger: #DC2626;
+    --white: #FFFFFF;
+    --black: #000000;
+}
+
 .app {
     margin: auto;
     width: 640px;
     height: 960px;
     overflow: hidden;
     position: relative;
-    background: pink;
-    font-family: Arial, sans-serif;
-
+    background: var(--bg);
+    color: var(--text)
+    /* font-family: Arial, sans-serif; */
 }
 
 .tabcontent {
@@ -23,54 +36,38 @@
     left: 0;
     width: 100%;
     display: flex;
-    background: navy;
+    background: var(--brand-700);
     height: 70px;
 }
 
 .tablink {
     flex: 1;
     border: none;
-    background: navy;
-    color: yellow;
+    background: transparent;
+    color: var(--white);
     font-size: 12px;
     font-weight: bold;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    outline: none;
+    gap: 6px;
 }
 
 .tablink img {
     width: 28px;
     height: 28px;
+    filter: brightness(0) invert(1)
 }
 
-.icon-text {
-    margin-bottom: -12px;
-}
-
-.icon-lr {
-    margin-bottom: 4px;
-}
-
-.icon-colors {
-    margin-bottom: 4px;
-}
-
-.icon-profile {
-    margin-bottom: 4px;
-}
-
-.icon-choices {
-    margin-bottom: 4px;
-}
-
+.icon-text,
+.icon-lr,
+.icon-colors,
+.icon-profile,
+.icon-choices,
 .icon-todo {
-    margin-bottom: 4px
-}
-
-.tablink:hover {
-    background: gray;
+  margin: 0;
 }
 
 .lower-right {
@@ -93,13 +90,13 @@
 }
 
 .line1 {
-    color: yellow;
-    background: black;
+    color: #FFFF00;
+    background: var(--black);
 }
 
 .line2 {
-    color: purple;
-    background: yellow;
+    color: #6B21A8;
+    background: #FFFF00;
 }
 
 .profile {
@@ -112,8 +109,8 @@
 }
 
 .alert {
-    background: red;
-    color: white;
+    background: var(--danger);
+    color: var(--white);
     padding: 10px;
     margin-top: 10px;
 }
