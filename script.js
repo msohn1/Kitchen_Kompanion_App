@@ -1,43 +1,65 @@
 function openTab(tabName) {
-    const contents = document.getElementsByClassName("tabcontent");
-    for (let c of contents) c.style.display = "none";
-    document.getElementById(tabName).style.display = "block";
+  const contents = document.getElementsByClassName("tabcontent");
+  for (let c of contents) c.style.display = "none";
+  const el = document.getElementById(tabName);
+  if (el) el.style.display = "block";
+
+  // Highlight active tab button
+  const tablinks = document.getElementsByClassName("tablink");
+  for (let btn of tablinks) {
+    btn.classList.remove("active");
+    // Find which tab this button opens
+    const onclick = btn.getAttribute("onclick");
+    if (onclick && onclick.includes(tabName)) {
+      btn.classList.add("active");
+    }
+  }
 }
 
 openTab("inventory");
 
-document.getElementById("profileImg").onclick = () => {
-    document.getElementById("alert").classList.remove("hidden");
-};
+const profileImg = document.getElementById("profileImg");
+const alertEl = document.getElementById("alert");
+if (profileImg && alertEl) {
+  profileImg.onclick = () => {
+    alertEl.classList.remove("hidden");
+  };
+}
 
 function closeAlert() {
-    document.getElementById("alert").classList.add("hidden");
+  const a = document.getElementById("alert");
+  if (a) a.classList.add("hidden");
 }
 
 function showChoices() {
-    const camera1 = document.querySelector('input[name="camera1"]:checked').value;
-    const camera2 = document.getElementById("camera2").value;
-    document.getElementById("choiceOutput").textContent =
-    `You chose ${camera1} and ${camera2}.`;
+  const cam1El = document.querySelector('input[name="camera1"]:checked');
+  const cam2El = document.getElementById("camera2");
+  const outEl = document.getElementById("choiceOutput");
+  if (!cam1El || !cam2El || !outEl) return;
+  const camera1 = cam1El.value;
+  const camera2 = cam2El.value;
+  outEl.textContent = `You chose ${camera1} and ${camera2}.`;
 }
 
 function addItem() {
-    const input = document.getElementById("todoInput");
-    const text = input.value.trim();
-    if (!text) return;
+  const input = document.getElementById("todoInput");
+  const list = document.getElementById("todoList");
+  if (!input || !list) return;
+  const text = input.value.trim();
+  if (!text) return;
 
-    const li = document.createElement("li");
-    li.textContent = text;
+  const li = document.createElement("li");
+  li.textContent = text;
 
-    li.onclick = () => li.classList.toggle("done");
+  li.onclick = () => li.classList.toggle("done");
 
-    const removeBtn = document.createElement("button");
-    removeBtn.textContent = "×";
-    removeBtn.onclick = () => li.remove();
+  const removeBtn = document.createElement("button");
+  removeBtn.textContent = "×";
+  removeBtn.onclick = () => li.remove();
 
-    li.appendChild(removeBtn);
-    document.getElementById("todoList").appendChild(li);
-    input.value = "";
+  li.appendChild(removeBtn);
+  list.appendChild(li);
+  input.value = "";
 }
 
 const today = new Date();
@@ -48,7 +70,8 @@ const formattedDate = today.toLocaleDateString("en-US", {
   day: "numeric"
 });
 
-document.getElementById("today").textContent = formattedDate;
+const todayEl = document.getElementById("today");
+if (todayEl) todayEl.textContent = formattedDate;
 /* ---------- Inventory Data ---------- */
 const INVENTORY_KEY = "kk_inventory_v1";
 let inventory = JSON.parse(localStorage.getItem(INVENTORY_KEY) || "[]");
@@ -138,11 +161,10 @@ function renderInventory() {
 
     const tdAct = document.createElement("td");
     tdAct.style.textAlign = "right";
-    tdAct.append(makeRowBtn("−", () => adjustQty(it.id, -1)),
-                 " ",
-                 makeRowBtn("+", () => adjustQty(it.id, +1)),
-                 " ",
-                 makeRowBtn("Delete", () => removeItem(it.id)));
+  const minusBtn = makeRowBtn("−", () => adjustQty(it.id, -1)); minusBtn.classList.add('small');
+  const plusBtn = makeRowBtn("+", () => adjustQty(it.id, +1)); plusBtn.classList.add('small');
+  const delBtn = makeRowBtn("Delete", () => removeItem(it.id)); delBtn.classList.add('danger');
+  tdAct.append(minusBtn, " ", plusBtn, " ", delBtn);
 
     tr.append(tdName, tdQty, tdUnit, tdMin, tdExp, tdDays, tdAct);
     tbody.appendChild(tr);
@@ -158,7 +180,10 @@ function domTD(cls, text) {
 function fmtNum(n) { const v = Number(n); return Number.isFinite(v) ? (v % 1 ? v.toFixed(2) : String(v)) : ""; }
 function makeRowBtn(label, fn) {
   const b = document.createElement("button");
-  b.className = "btn"; b.style.padding = "4px 8px"; b.textContent = label; b.onclick = fn; return b;
+  b.className = "btn row-btn";
+  b.textContent = label;
+  b.onclick = fn;
+  return b;
 }
 
 /* ---------- Mutations ---------- */
@@ -194,27 +219,37 @@ function adjustQty(id, delta) {
 
 /* ---------- Modal Controls ---------- */
 const addModal = document.getElementById("addModal");
-function showAddModal() { addModal.classList.add("show"); addModal.setAttribute("aria-hidden","false"); }
-function hideAddModal() { addModal.classList.remove("show"); addModal.setAttribute("aria-hidden","true"); }
+function showAddModal() { if (!addModal) return; addModal.classList.add("show"); addModal.setAttribute("aria-hidden","false"); }
+function hideAddModal() { if (!addModal) return; addModal.classList.remove("show"); addModal.setAttribute("aria-hidden","true"); }
 
 /* ---------- Wire up events ---------- */
-document.getElementById("filterAll").onclick = () => { currentFilter = "all"; renderInventory(); };
-document.getElementById("filterLow").onclick = () => { currentFilter = "low"; renderInventory(); };
-document.getElementById("filterExpiring").onclick = () => { currentFilter = "expiring"; renderInventory(); };
-document.getElementById("invSearch").addEventListener("input", (e) => { currentSearch = e.target.value.trim(); renderInventory(); });
+const fFilterAll = document.getElementById("filterAll");
+const fFilterLow = document.getElementById("filterLow");
+const fFilterExp = document.getElementById("filterExpiring");
+const fSearch = document.getElementById("invSearch");
+const openAddBtn = document.getElementById("openAddModal");
+const closeAddBtn = document.getElementById("closeAddModal");
+const cancelAddBtn = document.getElementById("cancelAdd");
+const addForm = document.getElementById("addForm");
 
-document.getElementById("openAddModal").onclick = showAddModal;
-document.getElementById("closeAddModal").onclick = hideAddModal;
-document.getElementById("cancelAdd").onclick = hideAddModal;
-document.getElementById("addModal").addEventListener("click", (e) => { if (e.target === addModal) hideAddModal(); });
+if (fFilterAll) fFilterAll.onclick = () => { currentFilter = "all"; renderInventory(); };
+if (fFilterLow) fFilterLow.onclick = () => { currentFilter = "low"; renderInventory(); };
+if (fFilterExp) fFilterExp.onclick = () => { currentFilter = "expiring"; renderInventory(); };
+if (fSearch) fSearch.addEventListener("input", (e) => { currentSearch = e.target.value.trim(); renderInventory(); });
 
-document.getElementById("addForm").addEventListener("submit", (e) => {
-  e.preventDefault();
-  addItemFromForm(e.target);
-  e.target.reset();
-  hideAddModal();
-});
+if (openAddBtn) openAddBtn.onclick = showAddModal;
+if (closeAddBtn) closeAddBtn.onclick = hideAddModal;
+if (cancelAddBtn) cancelAddBtn.onclick = hideAddModal;
+if (addModal) addModal.addEventListener("click", (e) => { if (e.target === addModal) hideAddModal(); });
 
+if (addForm) {
+  addForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    addItemFromForm(e.target);
+    e.target.reset();
+    hideAddModal();
+  });
+}
 
 
 function toggleExpand(selectedCard) {

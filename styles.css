@@ -11,6 +11,7 @@
     --black: #000000;
 }
 
+
 .app {
     margin: auto;
     width: 640px;
@@ -31,10 +32,10 @@
 }
 
 .tabbar {
-    position: absolute;
+    position: relative;
     bottom: 0;
-    left: 0;
-    width: 100%;
+    left:0;
+    width: 640px;
     display: flex;
     background: var(--brand-700);
     height: 70px;
@@ -59,6 +60,15 @@
     width: 28px;
     height: 28px;
     filter: brightness(0) invert(1)
+}
+
+.tablink.active {
+  background: var(--brand-600);
+  color: var(--accent);
+}
+
+.tablink.active img {
+  filter: brightness(0) saturate(100%) invert(64%) sepia(71%) saturate(528%) hue-rotate(358deg) brightness(100%) contrast(92%);
 }
 
 .color-box {
@@ -118,11 +128,45 @@
 .badge.low { background: #FEF3C7; }
 .badge.exp { background: #FEE2E2; }
 
+/* Row action buttons: compact, macOS-like */
+.row-btn {
+  --btn-bg: #f2f4f7;
+  --btn-border: rgba(15,23,42,0.08);
+  --btn-shadow: 0 1px 0 rgba(255,255,255,0.6) inset;
+  border: 1px solid var(--btn-border);
+  background: linear-gradient(#ffffff, var(--btn-bg));
+  box-shadow: var(--btn-shadow);
+  color: var(--text);
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform .06s ease, box-shadow .06s ease, background .06s ease;
+}
+.row-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 8px rgba(2,6,23,0.06); }
+.row-btn:active { transform: translateY(0); box-shadow: 0 2px 4px rgba(2,6,23,0.08); }
+.row-btn + .row-btn { margin-left: 8px; }
+
+/* Small numeric +/- style */
+.row-btn.small { padding: 4px 8px; border-radius: 6px; font-weight: 600; }
+
+/* Danger variant for Delete */
+.row-btn.danger {
+  --btn-bg: #fff5f5;
+  border-color: rgba(220,38,38,0.12);
+  color: var(--danger);
+}
+
 .muted { color: var(--muted); font-size: 14px; padding: 12px; }
 
 /* Modal */
 .modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.45); z-index: 1000; }
 .modal.show { display: flex; }
+.modal, .modal * {
+  /* ensure modal text and form controls match the app font */
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
 .modal-card { width: min(520px, 92%); background: #fff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.2); padding: 16px; }
 .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 .icon-btn { border: none; background: transparent; font-size: 24px; line-height: 1; cursor: pointer; }
