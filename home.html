@@ -171,8 +171,72 @@
     </div>
   </div>
 
-  <div id="setting" class="tabcontent">
-        <h2>Setting</h2>
+    <div id="setting" class="tabcontent">
+        <h2>Settings</h2>
+
+        <form id="settingsForm" class="grid settings-grid">
+          <fieldset>
+            <legend>Dietary restrictions</legend>
+            <div class="checkbox-row">
+              <label><input type="checkbox" name="diet" value="vegetarian"> Vegetarian</label>
+              <label><input type="checkbox" name="diet" value="vegan"> Vegan</label>
+              <label><input type="checkbox" name="diet" value="pescatarian"> Pescatarian</label>
+              <label><input type="checkbox" name="diet" value="gluten-free"> Gluten-free</label>
+              <label><input type="checkbox" name="diet" value="dairy-free"> Dairy-free</label>
+              <label><input type="checkbox" name="diet" value="nut-free"> Nut-free</label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Allergies</legend>
+            <div class="checkbox-row">
+              <label><input type="checkbox" name="allergy" value="peanuts"> Peanuts</label>
+              <label><input type="checkbox" name="allergy" value="tree-nuts"> Tree nuts</label>
+              <label><input type="checkbox" name="allergy" value="milk"> Milk</label>
+              <label><input type="checkbox" name="allergy" value="eggs"> Eggs</label>
+              <label><input type="checkbox" name="allergy" value="soy"> Soy</label>
+              <label><input type="checkbox" name="allergy" value="wheat"> Wheat</label>
+              <label><input type="checkbox" name="allergy" value="gluten"> Gluten</label>
+              <label><input type="checkbox" name="allergy" value="fish"> Fish</label>
+              <label><input type="checkbox" name="allergy" value="shellfish"> Shellfish</label>
+              <label><input type="checkbox" name="allergy" value="sesame"> Sesame</label>
+              <label><input type="checkbox" name="allergy" value="mustard"> Mustard</label>
+              <label><input type="checkbox" name="allergy" value="sulfites"> Sulfites</label>
+              <label><input type="checkbox" name="allergy" value="celery"> Celery</label>
+              <label><input type="checkbox" name="allergy" value="mollusks"> Mollusks</label>
+              <label><input type="checkbox" name="allergy" value="other"> Other
+                <input type="text" name="allergy-other" placeholder="specify" class="small-input" />
+              </label>
+            </div>
+          </fieldset>
+
+          <label>
+            <span>Cooking skill</span>
+            <select id="skillSelect" name="skill">
+              <option value="beginner">Beginner</option>
+              <option value="novice">Novice</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="expert">Expert</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Food preference</span>
+            <select id="foodPref" name="foodPref">
+              <option value="none">No preference</option>
+              <option value="vegetarian">Prefer vegetarian</option>
+              <option value="vegan">Prefer vegan</option>
+              <option value="low-carb">Prefer low-carb</option>
+              <option value="high-protein">Prefer high-protein</option>
+            </select>
+          </label>
+
+          <div class="modal-actions" style="grid-column: 1 / -1;">
+            <button type="button" class="btn" id="resetSettings">Reset</button>
+            <button type="button" class="btn accent" id="saveSettings">Save</button>
+          </div>
+        </form>
+
     </div>
 
     <!-- Add Item Modal -->

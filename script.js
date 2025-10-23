@@ -362,7 +362,10 @@ function renderShopping() {
     }
     // visual marker for auto-added items
     if (it.autoAdded) {
-      const autoMark = document.createElement('span'); autoMark.className = 'auto-mark'; autoMark.textContent = 'Auto'; autoMark.title = 'Automatically added from inventory (low/expiring)';
+      const autoMark = document.createElement('span'); autoMark.className = 'auto-mark'; autoMark.title = 'Automatically added from inventory (low/expiring)';
+      autoMark.setAttribute('role','img'); autoMark.setAttribute('aria-label','Auto-added');
+      // textual Auto marker for clarity
+      autoMark.textContent = 'Auto';
       tdCat.appendChild(autoMark);
     }
 
@@ -504,3 +507,125 @@ function toggleExpand(selectedCard) {
 /* ---------- Initial paint on load ---------- */
 renderInventory();
 renderShopping();
+
+/* ---------- Settings ---------- */
+const SETTINGS_KEY = 'kk_settings_v1';
+let settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+
+// Allergy constants (keys used in settings) and keyword map for recipe filtering
+const ALLERGY_OPTIONS = [
+  { key: 'peanuts', label: 'Peanuts' },
+  { key: 'tree-nuts', label: 'Tree nuts' },
+  { key: 'milk', label: 'Milk' },
+  { key: 'eggs', label: 'Eggs' },
+  { key: 'soy', label: 'Soy' },
+  { key: 'wheat', label: 'Wheat' },
+  { key: 'gluten', label: 'Gluten' },
+  { key: 'fish', label: 'Fish' },
+  { key: 'shellfish', label: 'Shellfish' },
+  { key: 'sesame', label: 'Sesame' },
+  { key: 'mustard', label: 'Mustard' },
+  { key: 'sulfites', label: 'Sulfites' },
+  { key: 'celery', label: 'Celery' },
+  { key: 'mollusks', label: 'Mollusks' },
+  { key: 'other', label: 'Other' }
+];
+const ALLERGY_KEYS = ALLERGY_OPTIONS.map(o => o.key);
+
+const ALLERGY_KEYWORDS = {
+  'peanuts': ['peanut','peanuts'],
+  'tree-nuts': ['almond','walnut','cashew','pecan','hazelnut','brazil nut','macadamia','pistachio','tree nut'],
+  'milk': ['milk','cheese','butter','cream','yogurt','whey','casein'],
+  'eggs': ['egg','eggs','mayonnaise'],
+  'soy': ['soy','tofu','edamame','soy sauce','tamari','miso'],
+  'wheat': ['wheat','flour','bread','pasta','seitan'],
+  'gluten': ['gluten','wheat','barley','rye','malt'],
+  'fish': ['fish','salmon','tuna','cod','trout','anchovy'],
+  'shellfish': ['shrimp','prawn','crab','lobster','shellfish'],
+  'sesame': ['sesame','tahini','benne'],
+  'mustard': ['mustard'],
+  'sulfites': ['sulfite','sulphite','sulphites'],
+  'celery': ['celery'],
+  'mollusks': ['clam','oyster','mussel','scallop','mollusk']
+};
+
+function escapeRegExp(string) {
+  return String(string).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function persistSettings() { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
+
+function renderSettings() {
+  // dietary checkboxes
+  const diets = new Set(settings.diet || []);
+  document.querySelectorAll('input[name="diet"]').forEach(chk => { chk.checked = diets.has(chk.value); });
+  // allergies: set checkboxes from settings.allergies
+  const allergySet = new Set((settings.allergies || []).map(x => String(x).toLowerCase()));
+  document.querySelectorAll('input[name="allergy"]').forEach(chk => { chk.checked = allergySet.has(chk.value); });
+  // other allergy text (stored separately in settings.otherAllergies)
+  const otherInput = document.querySelector('input[name="allergy-other"]'); if (otherInput) otherInput.value = settings.otherAllergies || '';
+  // skill
+  const skill = document.getElementById('skillSelect'); if (skill) skill.value = settings.skill || 'beginner';
+  // food pref
+  const fp = document.getElementById('foodPref'); if (fp) fp.value = settings.foodPref || 'none';
+}
+
+function loadSettings() { settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); renderSettings(); }
+
+function saveSettingsFromForm() {
+  const sel = Array.from(document.querySelectorAll('input[name="diet"]:checked')).map(i => i.value);
+  settings.diet = sel;
+  // collect allergies from predefined checkboxes and optional other text
+  const allergies = Array.from(document.querySelectorAll('input[name="allergy"]:checked')).map(c => c.value);
+  const other = String(document.querySelector('input[name="allergy-other"]')?.value || '').trim();
+  settings.allergies = allergies; // only keys
+  settings.otherAllergies = other || '';
+  settings.skill = document.getElementById('skillSelect')?.value || 'beginner';
+  settings.foodPref = document.getElementById('foodPref')?.value || 'none';
+  persistSettings(); renderSettings();
+}
+
+// recipe filtering: hide recipes that contain any selected allergy keywords
+function filterRecipesByAllergies() {
+  const selected = new Set((settings.allergies || []).map(s => String(s).toLowerCase()));
+  const other = String(settings.otherAllergies || '').toLowerCase();
+  const recipeCards = document.querySelectorAll('.recipe-card');
+  for (const card of recipeCards) {
+    const ingEls = card.querySelectorAll('.ingredients li');
+    let text = '';
+    ingEls.forEach(li => { text += ' ' + (li.textContent || '').toLowerCase(); });
+    let exclude = false;
+    for (const a of selected) {
+      const keywords = ALLERGY_KEYWORDS[a] || [a];
+      for (const kw of keywords) {
+        const re = new RegExp('\\b' + escapeRegExp(kw) + '\\b', 'i');
+        if (re.test(text)) { exclude = true; break; }
+      }
+      if (exclude) break;
+    }
+    if (!exclude && other) {
+      const reOther = new RegExp('\\b' + escapeRegExp(other) + '\\b', 'i');
+      if (reOther.test(text)) exclude = true;
+    }
+    if (exclude) card.classList.add('hidden'); else card.classList.remove('hidden');
+  }
+}
+
+// wiring
+const addAllergyBtn = document.getElementById('addAllergyBtn');
+const allergyInput = document.getElementById('allergyInput');
+const saveSettingsBtn = document.getElementById('saveSettings');
+const resetSettingsBtn = document.getElementById('resetSettings');
+
+if (addAllergyBtn && allergyInput) addAllergyBtn.onclick = () => {
+  const v = String(allergyInput.value || '').trim(); if (!v) return; settings.allergies = Array.from(new Set([...(settings.allergies || []), v])); allergyInput.value = ''; persistSettings(); renderSettings(); };
+
+if (saveSettingsBtn) saveSettingsBtn.onclick = () => { saveSettingsFromForm(); };
+if (resetSettingsBtn) resetSettingsBtn.onclick = () => { settings = {}; persistSettings(); renderSettings(); };
+
+loadSettings();
+// apply recipe filtering initially
+filterRecipesByAllergies();
+// call filtering after settings change
+if (saveSettingsBtn) saveSettingsBtn.addEventListener('click', () => filterRecipesByAllergies());
+if (resetSettingsBtn) resetSettingsBtn.addEventListener('click', () => filterRecipesByAllergies());

@@ -181,7 +181,8 @@ td.category { color: var(--muted); }
 #shopTable td .badge.cat { display: inline-block; padding: 4px 10px; border-radius: 999px; background: #eef2ff; color: var(--brand-700); font-weight: 600; }
 
 /* Auto-added marker */
-.auto-mark { display: inline-block; margin-left: 8px; padding: 2px 6px; background: #F3F4F6; color: #374151; border-radius: 999px; font-size: 11px; font-weight: 600; }
+
+.auto-mark { display: inline-flex; align-items: center; justify-content: center; margin-left: 8px; padding: 2px 8px; background: #E6F0FF; color: #0B3D91; border-radius: 999px; font-size: 12px; font-weight: 700; }
 
 /* Auto-row visual treatment */
 .auto-row { background: linear-gradient(180deg, rgba(238,242,255,0.6), rgba(255,255,255,0)); }
@@ -255,6 +256,14 @@ td.category { color: var(--muted); }
 .grid select, .grid select#addShopCategory { padding: 8px 10px; border: 1px solid #e5e7eb; border-radius: 10px; background: #fff; font-size: 14px; }
 .grid label span { font-size: 13px; color: var(--muted); }
 .modal-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px; }
+
+/* Settings */
+.settings-grid { grid-template-columns: 1fr; gap: 12px; }
+.settings-grid fieldset { border: 1px solid #e5e7eb; padding: 10px; border-radius: 10px; }
+.checkbox-row { display: flex; gap: 12px; flex-wrap: wrap; }
+.chip-list { margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap; }
+.chip { background: #f3f4f6; padding: 6px 8px; border-radius: 999px; display: inline-flex; gap: 6px; align-items: center; font-weight: 600; }
+.chip .icon-btn.small { font-size: 12px; padding: 2px 6px; border-radius: 6px; }
 
 .recipe-card {
   border: 2px solid #000;
