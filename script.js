@@ -4,7 +4,7 @@ function openTab(tabName) {
     document.getElementById(tabName).style.display = "block";
 }
 
-openTab("home");
+openTab("inventory");
 
 document.getElementById("profileImg").onclick = () => {
     document.getElementById("alert").classList.remove("hidden");
@@ -215,5 +215,4 @@ document.getElementById("addForm").addEventListener("submit", (e) => {
   hideAddModal();
 });
 
-/* ---------- Initial paint on load ---------- */
 renderInventory();
