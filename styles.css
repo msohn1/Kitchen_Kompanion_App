@@ -131,4 +131,47 @@
 .grid input { padding: 8px 10px; border: 1px solid #e5e7eb; border-radius: 10px; }
 .modal-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px; }
 
+.recipe-card {
+  border: 2px solid #000;
+  border-radius: 10px;
+  margin: 15px 0;
+  padding: 10px;
+  background-color: #f8f8f8;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-content {
+  display: none;
+  margin-top: 10px;
+  border-top: 1px solid #ccc;
+  padding-top: 10px;
+  display: none;
+}
+
+.recipe-card.expanded .card-content {
+  display: flex;
+  justify-content: space-between;
+}
+
+.recipe-card.expanded .toggle-btn {
+  transform: rotate(45deg);
+}
+
+.ingredients, .recipes {
+  width: 45%;
+}
+
+.toggle-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
 
