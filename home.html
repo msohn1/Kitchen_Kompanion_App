@@ -87,89 +87,23 @@
 
 <div id="recipes" class="tabcontent">
       <h2>Suggested Recipes</h2>
-
-    <!-- Recipe 1 -->
-    <div class="recipe-card" onclick="toggleExpand(this)">
-      <div class="card-header">
-        <h3>Recipe 1: Breakfast Sandwich</h3>
-        <button class="toggle-btn">+</button>
+      <div class="inv-toolbar recipe-toolbar">
+        <input id="recipeSearch" type="search" placeholder="Search recipes, ingredients…" />
+        <select id="recipeSort">
+          <option value="recommended">Recommended</option>
+          <option value="missing">Most ingredients match</option>
+          <option value="time">Shortest time</option>
+        </select>
+        <select id="recipeDietFilter">
+          <option value="all">All diets</option>
+          <option value="vegetarian">Vegetarian</option>
+          <option value="vegan">Vegan</option>
+        </select>
       </div>
-      <div class="card-content">
-        <div class="ingredients">
-          <h4>Ingredients</h4>
-          <ul>
-            <li>2 slices of bread</li>
-            <li>1 egg</li>
-            <li>2 slices of bacon</li>
-            <li>1 slice of cheese</li>
-          </ul>
-        </div>
-        <div class="steps">
-          <h4>Steps</h4>
-          <ol>
-            <li>Cook bacon until crispy and set aside.</li>
-            <li>Fry an egg to your liking.</li>
-            <li>Toast the bread slices.</li>
-            <li>Assemble sandwich with egg, bacon, and cheese.</li>
-          </ol>
-        </div>
+      <div class="inv-wrap">
+        <div id="recipesList"></div>
       </div>
     </div>
-
-    <!-- Recipe 2 -->
-    <div class="recipe-card" onclick="toggleExpand(this)">
-      <div class="card-header">
-        <h3>Recipe 2: Garlic Chicken Bowl</h3>
-        <button class="toggle-btn">+</button>
-      </div>
-      <div class="card-content">
-        <div class="ingredients">
-          <h4>Ingredients</h4>
-          <ul>
-            <li>1 chicken breast</li>
-            <li>1 cup cooked rice</li>
-            <li>2 cloves garlic</li>
-            <li>1 tbsp soy sauce</li>
-          </ul>
-        </div>
-        <div class="steps">
-          <h4>Steps</h4>
-          <ol>
-            <li>Dice chicken and sauté with minced garlic.</li>
-            <li>Add soy sauce and cook until browned.</li>
-            <li>Serve over a bowl of rice.</li>
-          </ol>
-        </div>
-      </div>
-    </div>
-
-    <!-- Recipe 3 -->
-    <div class="recipe-card" onclick="toggleExpand(this)">
-      <div class="card-header">
-        <h3>Recipe 3: Mozzarella Toast</h3>
-        <button class="toggle-btn">+</button>
-      </div>
-      <div class="card-content">
-        <div class="ingredients">
-          <h4>Ingredients</h4>
-          <ul>
-            <li>2 slices of bread</li>
-            <li>1 tomato</li>
-            <li>2 slices mozzarella</li>
-            <li>Olive oil</li>
-          </ul>
-        </div>
-        <div class="steps">
-          <h4>Steps</h4>
-          <ol>
-            <li>Brush bread with olive oil and toast lightly.</li>
-            <li>Add tomato and mozzarella slices on top.</li>
-            <li>Toast again until cheese melts.</li>
-          </ol>
-        </div>
-      </div>
-    </div>
-  </div>
 
     <div id="setting" class="tabcontent">
         <h2>Settings</h2>
@@ -285,6 +219,24 @@
         <button type="submit" class="btn accent">Save</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- Confirm add missing ingredients modal -->
+<div class="modal" id="confirmMissingModal" aria-hidden="true">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>Add missing ingredients</h3>
+      <button class="icon-btn" id="closeConfirmMissing" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <p>The following ingredients are missing. Review and confirm to add them to your Shopping list.</p>
+      <div id="missingList"></div>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn" id="cancelConfirmMissing">Cancel</button>
+      <button type="button" class="btn accent" id="confirmAddMissing">Add to Shopping</button>
+    </div>
   </div>
 </div>
 

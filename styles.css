@@ -98,13 +98,13 @@
 
 /* Inventory UI */
 .inv-toolbar {
-  display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px;
+  display: flex; gap: 10px; align-items: center; flex-wrap: nowrap; margin-bottom: 12px;
   font-size: 14px;
 }
 .inv-toolbar .btn { padding: 8px 12px; border-radius: 10px; border: 1px solid #e5e7eb; background: #fff; cursor: pointer; }
 .inv-toolbar .btn:hover { filter: brightness(0.97); }
 .inv-toolbar .btn.accent { background: var(--accent); color: var(--black); border-color: transparent; }
-#invSearch { flex: 0 1 140px; min-width: 100px; max-width: 260px; padding: 8px 10px; border: 1px solid #e5e7eb; border-radius: 10px; }
+#invSearch { flex: 0 1 120px; min-width: 80px; max-width: 180px; padding: 8px 10px; border: 1px solid #e5e7eb; border-radius: 10px; }
 
 /* Category filter select */
 #filterCategory { padding: 8px 10px; border-radius: 10px; border: 1px solid #e5e7eb; background: #fff; }
@@ -265,47 +265,85 @@ td.category { color: var(--muted); }
 .chip { background: #f3f4f6; padding: 6px 8px; border-radius: 999px; display: inline-flex; gap: 6px; align-items: center; font-weight: 600; }
 .chip .icon-btn.small { font-size: 12px; padding: 2px 6px; border-radius: 6px; }
 
+/* Recipe cards: style to match other app cards */
 .recipe-card {
-  border: 2px solid #000;
-  border-radius: 10px;
-  margin: 15px 0;
-  padding: 10px;
-  background-color: #f8f8f8;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  margin: 14px 0; /* breathing room between recipes */
+  padding: 12px;
+  background-color: #fff;
+  transition: all 0.12s ease;
+  box-shadow: 0 6px 18px rgba(2,6,23,0.04);
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
 }
+
+.card-header h3 { margin: 0; font-size: 16px; }
+.card-header .meta { color: var(--muted); font-size: 13px; }
 
 .card-content {
   display: none;
-  margin-top: 10px;
-  border-top: 1px solid #ccc;
-  padding-top: 10px;
-  display: none;
+  margin-top: 12px;
+  border-top: 1px solid #f3f4f6;
+  padding-top: 12px;
+  gap: 16px;
+  flex-direction: column;
 }
 
 .recipe-card.expanded .card-content {
   display: flex;
-  justify-content: space-between;
 }
 
 .recipe-card.expanded .toggle-btn {
   transform: rotate(45deg);
 }
 
-.ingredients, .recipes {
-  width: 45%;
-}
+/* ensure ingredients/steps stack nicely on narrow cards */
+.ingredients, .steps { width: 100%; }
+
+.ingredients h4, .steps h4 { margin: 0 0 8px 0; font-size: 14px; }
+.ingredients ul, .steps ol { margin: 0 0 8px 0; padding-left: 18px; }
+
+/* Ingredient availability pills */
+.ing-pill { display: inline-block; width: 22px; height: 22px; line-height: 22px; text-align: center; border-radius: 999px; font-weight: 700; font-size: 12px; margin-right: 8px; }
+.ing-available { background: #D1FAE5; color: #065F46; }
+.ing-missing { background: #FEE2E2; color: #991B1B; }
+.ingredients li { margin-bottom: 8px; display: flex; align-items: center; }
 
 .toggle-btn {
   background: none;
   border: none;
   font-size: 20px;
   cursor: pointer;
+  width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;
+  background: linear-gradient(#ffffff, #f2f4f7); border: 1px solid rgba(15,23,42,0.06);
 }
+
+/* generic button styles for cards and other places */
+.btn { padding: 8px 12px; border-radius: 10px; border: 1px solid #e5e7eb; background: #fff; cursor: pointer; font-size: 14px; }
+.btn:hover { filter: brightness(0.98); }
+.btn.accent { background: var(--accent); color: var(--black); border-color: transparent; }
+.card-actions { display: flex; gap: 10px; align-items: center; }
+
+/* Recipe toolbar alignment: match Inventory/Shopping sizing */
+.recipe-toolbar.inv-toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+.recipe-toolbar.inv-toolbar .btn { padding: 8px 12px; border-radius: 10px; border: 1px solid #e5e7eb; background: #fff; cursor: pointer; }
+.recipe-toolbar.inv-toolbar .btn.accent { background: var(--accent); color: var(--black); border-color: transparent; }
+.recipe-toolbar #recipeSearch { flex: 0 1 220px; min-width: 140px; max-width: 320px; padding: 8px 10px; border: 1px solid #e5e7eb; border-radius: 10px; }
+.recipe-toolbar select { padding: 8px 10px; border-radius: 10px; border: 1px solid #e5e7eb; background: #fff; font-size: 14px; min-width: 160px; }
+
+/* Diet badges next to recipe title */
+.diet-badge { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; margin-left: 8px; }
+.diet-badge.diet-vegetarian { background: #ECFDF5; color: #065F46; }
+.diet-badge.diet-vegan { background: #ECFDF5; color: #065F46; }
+.diet-badge.diet-pescatarian { background: #EEF2FF; color: #1E3A8A; }
+.diet-badge.diet-gluten-free { background: #FEF3C7; color: #92400E; }
+
+/* Make the recipes list area clearer */
+#recipesList { padding: 6px 0; }
 

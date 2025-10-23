@@ -549,6 +549,87 @@ const ALLERGY_KEYWORDS = {
   'mollusks': ['clam','oyster','mussel','scallop','mollusk']
 };
 
+// Expanded ingredient synonyms mapping. Broad set covering cheeses, herbs, veg variants, proteins, canned/frozen forms and pantry items.
+const INGREDIENT_SYNONYMS = {
+  // cheeses -> canonical 'cheese'
+  'mozzarella': 'cheese', 'mozzarella cheese': 'cheese', 'fresh mozzarella': 'cheese', 'buffalo mozzarella': 'cheese',
+  'cheddar': 'cheese', 'cheddar cheese': 'cheese', 'parmesan': 'cheese', 'parmigiano': 'cheese', 'parmesan cheese': 'cheese', 'provolone': 'cheese', 'feta': 'cheese', 'goat cheese': 'cheese', 'brie': 'cheese', 'camembert': 'cheese', 'gorgonzola': 'cheese', 'blue cheese': 'cheese', 'asiago': 'cheese', 'emmental': 'cheese', 'swiss cheese': 'cheese', 'gouda': 'cheese',
+
+  // dairy / milk variants
+  'milk': 'milk', 'whole milk': 'milk', 'skim milk': 'milk', '2% milk': 'milk', 'butter': 'butter', 'unsalted butter': 'butter', 'salted butter': 'butter', 'cream': 'cream', 'heavy cream': 'cream', 'sour cream': 'cream', 'greek yogurt': 'yogurt', 'yoghurt': 'yogurt', 'yogurt': 'yogurt', 'buttermilk': 'milk',
+
+  // eggs
+  'eggs': 'egg', 'egg': 'egg', 'egg whites': 'egg', 'egg yolk': 'egg',
+
+  // meats & proteins
+  'chicken breast': 'chicken', 'chicken thighs': 'chicken', 'chicken thigh': 'chicken', 'chicken': 'chicken', 'ground beef': 'beef', 'beef': 'beef', 'pork': 'pork', 'bacon': 'bacon', 'salami': 'pork', 'salmon': 'fish', 'tuna': 'fish', 'cod': 'fish', 'shrimp': 'shellfish', 'prawn': 'shellfish', 'tofu': 'tofu',
+
+  // vegetables (fresh/frozen/canned variants)
+  'tomatoes': 'tomato', 'tomato': 'tomato', 'cherry tomatoes': 'tomato', 'sun-dried tomato': 'tomato', 'potatoes': 'potato', 'potato': 'potato', 'sweet potato': 'potato',
+  'broccoli': 'broccoli', 'broccoli florets': 'broccoli', 'carrots': 'carrot', 'zucchini': 'zucchini', 'spinach': 'spinach', 'mixed greens': 'greens', 'spring mix': 'greens', 'lettuce': 'lettuce', 'kale': 'kale',
+
+  // aromatics & herbs
+  'garlic': 'garlic', 'garlic clove': 'garlic', 'minced garlic': 'garlic', 'onion': 'onion', 'red onion': 'onion', 'white onion': 'onion', 'shallot': 'shallot', 'scallion': 'green onion', 'green onions': 'green onion', 'leek': 'leek',
+  'fresh basil': 'basil', 'dried basil': 'basil', 'parsley': 'parsley', 'cilantro': 'cilantro', 'coriander': 'cilantro', 'rosemary': 'rosemary', 'thyme': 'thyme', 'oregano': 'oregano',
+
+  // oils & condiments
+  'olive oil': 'oil', 'extra virgin olive oil': 'oil', 'vegetable oil': 'oil', 'canola oil': 'oil', 'sesame oil': 'oil', 'soy sauce': 'soy sauce', 'tamari': 'soy sauce', 'ketchup': 'ketchup', 'mustard': 'mustard', 'salsa': 'salsa', 'mayonnaise': 'mayo', 'mayo': 'mayo',
+
+  // pantry staples & grains
+  'rice': 'rice', 'white rice': 'rice', 'brown rice': 'rice', 'pasta': 'pasta', 'spaghetti': 'pasta', 'penne': 'pasta', 'flour': 'flour', 'sugar': 'sugar', 'salt': 'salt', 'black pepper': 'pepper', 'pepper': 'pepper', 'quinoa': 'quinoa', 'couscous': 'couscous',
+
+  // legumes, nuts & seeds
+  'chickpeas': 'chickpea', 'garbanzo beans': 'chickpea', 'lentils': 'lentil', 'beans': 'bean', 'black beans': 'bean', 'kidney beans': 'bean',
+  'peanut': 'peanut', 'peanuts': 'peanut', 'almond': 'almond', 'walnut': 'walnut', 'cashew': 'cashew',
+
+  // canned/frozen indicators (map to base)
+  'canned tomatoes': 'tomato', 'diced tomatoes': 'tomato', 'crushed tomatoes': 'tomato', 'tomato paste': 'tomato',
+  'frozen peas': 'peas', 'frozen corn': 'corn', 'canned corn': 'corn', 'frozen vegetables': 'veg', 'canned beans': 'bean',
+
+  // spices & seasonings (kept literal but common variants included)
+  'paprika': 'paprika', 'smoked paprika': 'paprika', 'cumin': 'cumin', 'chili powder': 'chili', 'red pepper flakes': 'chili',
+
+  // fruits & misc
+  'lemon': 'lemon', 'lime': 'lime', 'avocado': 'avocado', 'olive': 'olive', 'olives': 'olive', 'honey': 'honey',
+
+  // fallback plural forms (some common plurals mapped to singular base)
+  'tomatoes': 'tomato', 'potatoes': 'potato', 'carrots': 'carrot', 'berries': 'berry',
+};
+
+// Simple lightweight stemmer (very small subset of rules) to reduce plurals/ed/ing
+function stemWord(w) {
+  if (!w) return w;
+  // common irregulars
+  const irregular = { 'children': 'child', 'mice': 'mouse', 'geese': 'goose' };
+  if (irregular[w]) return irregular[w];
+  // remove common endings
+  if (w.endsWith('ing') && w.length > 4) return w.slice(0, -3);
+  if (w.endsWith('ed') && w.length > 3) return w.slice(0, -2);
+  if (w.endsWith('es') && w.length > 3) return w.slice(0, -2);
+  if (w.endsWith('s') && w.length > 2) return w.slice(0, -1);
+  return w;
+}
+
+// Levenshtein distance for fuzzy matching
+function levenshtein(a, b) {
+  if (!a) return b ? b.length : 0;
+  if (!b) return a.length;
+  const m = a.length, n = b.length;
+  const dp = Array.from({length: m+1}, () => new Array(n+1).fill(0));
+  for (let i=0;i<=m;i++) dp[i][0]=i;
+  for (let j=0;j<=n;j++) dp[0][j]=j;
+  for (let i=1;i<=m;i++) {
+    for (let j=1;j<=n;j++) {
+      const cost = a[i-1] === b[j-1] ? 0 : 1;
+      dp[i][j] = Math.min(dp[i-1][j]+1, dp[i][j-1]+1, dp[i-1][j-1]+cost);
+    }
+  }
+  return dp[m][n];
+}
+
+function toTitleCase(s) { return String(s || '').toLowerCase().split(' ').map(w => w ? (w[0].toUpperCase() + w.slice(1)) : '').join(' '); }
+
+
 function escapeRegExp(string) {
   return String(string).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
@@ -611,6 +692,200 @@ function filterRecipesByAllergies() {
   }
 }
 
+/* ---------- Recipes (data-driven) ---------- */
+const recipes = [
+  {
+    id: 'r1', title: 'Breakfast Sandwich', time: 10, difficulty: 'beginner', diet: [],
+    ingredients: ['bread','egg','bacon','cheese'],
+    steps: ['Cook bacon until crispy and set aside.','Fry an egg to your liking.','Toast the bread slices.','Assemble sandwich with egg, bacon, and cheese.']
+  },
+  {
+    id: 'r2', title: 'Garlic Chicken Bowl', time: 25, difficulty: 'novice', diet: [],
+    ingredients: ['chicken breast','rice','garlic','soy sauce','broccoli'],
+    steps: ['Dice chicken and sauté with minced garlic.','Add soy sauce and cook until browned.','Serve over a bowl of rice.']
+  },
+  {
+    id: 'r3', title: 'Mozzarella Toast', time: 8, difficulty: 'beginner', diet: ['vegetarian'],
+    ingredients: ['bread','tomato','mozzarella','olive oil'],
+    steps: ['Brush bread with olive oil and toast lightly.','Add tomato and mozzarella slices on top.','Toast again until cheese melts.']
+  }
+  ,
+  {
+    id: 'r4', title: 'Avocado Toast', time: 6, difficulty: 'beginner', diet: ['vegan'],
+    ingredients: ['bread','avocado','lemon','salt','pepper'],
+    steps: ['Toast the bread to desired crispness.','Mash avocado with lemon, salt and pepper.','Spread avocado mix on toast and serve.']
+  },
+  {
+    id: 'r5', title: 'Pasta Primavera', time: 30, difficulty: 'intermediate', diet: ['vegetarian'],
+    ingredients: ['pasta','zucchini','bell pepper','tomato','parmesan','olive oil','garlic'],
+    steps: ['Cook pasta until al dente.','Sauté garlic in olive oil, add vegetables and cook until tender.','Toss pasta with vegetables and finish with parmesan.']
+  },
+  {
+    id: 'r6', title: 'Stir-Fry Veggies & Tofu', time: 20, difficulty: 'novice', diet: ['vegan'],
+    ingredients: ['tofu','broccoli','carrot','soy sauce','garlic','rice'],
+    steps: ['Press and cube tofu, then pan-fry until golden.','Stir-fry vegetables with garlic, add tofu and soy sauce.','Serve over steamed rice.']
+  },
+  {
+    id: 'r7', title: 'Beef Tacos', time: 18, difficulty: 'novice', diet: [],
+    ingredients: ['ground beef','taco shell','lettuce','cheddar','salsa'],
+    steps: ['Brown ground beef and season as desired.','Warm taco shells.','Assemble tacos with beef, lettuce, cheese and salsa.']
+  }
+];
+
+function normalizeIngredient(text) {
+  // strip counts/units and punctuation, collapse whitespace
+  let s = String(text || '').toLowerCase().replace(/\b(\d+|\d+\/\d+|cup|cups|tbsp|tsp|tablespoon|tablespoons|teaspoon|teaspoons|slices|slice|cloves|grams|gram|g|kg|ml|l|oz)\b/g,'');
+  s = s.replace(/[.,()]/g,'').replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,' ').trim();
+  if (!s) return '';
+  // simple plural handling: strip trailing 's' for common plurals (naive)
+  const exceptions = new Set(['cheese','oil','fish','beef','pork','milk','sugar']);
+  s = s.split(' ').map(w => {
+    if (!w) return w;
+    if (exceptions.has(w)) return w;
+    if (w.endsWith("es") && w.length > 3) return w.slice(0, -2);
+    if (w.endsWith('s') && w.length > 2) return w.slice(0, -1);
+    return w;
+  }).join(' ');
+  // apply synonyms mapping for multi-word keys first
+  for (const [k, v] of Object.entries(INGREDIENT_SYNONYMS)) {
+    const re = new RegExp('\\b' + escapeRegExp(k) + '\\b', 'i');
+    if (re.test(s)) { s = s.replace(re, v); }
+  }
+  // stem tokens
+  s = s.split(' ').map(tok => stemWord(tok)).join(' ').trim();
+  return s;
+}
+
+function computeRecipeMatch(recipe) {
+  const invCanon = inventory.map(i => normalizeIngredient(i.name || ''));
+  const available = [];
+  const missing = [];
+  const perIngredient = []; // [{ orig, norm, available: bool }]
+  for (const ing of recipe.ingredients) {
+    const n = normalizeIngredient(ing);
+    // treat match as token overlap (inventory token included in ingredient or vice-versa)
+    let found = invCanon.some(inv => {
+      if (!inv || !n) return false;
+      if (inv === n || inv.includes(n) || n.includes(inv)) return true;
+      const invTokens = inv.split(' ');
+      const nTokens = n.split(' ');
+      // token overlap
+      if (invTokens.some(tok => nTokens.includes(tok))) return true;
+      // fuzzy token match: allow short typos by levenshtein distance threshold
+      for (const a of invTokens) {
+        for (const b of nTokens) {
+          if (!a || !b) continue;
+          const maxLen = Math.max(a.length, b.length);
+          const dist = levenshtein(a, b);
+          // threshold: allow up to 20% of length as typos, min 1
+          if (dist > 0 && dist <= Math.max(1, Math.floor(maxLen * 0.2))) return true;
+        }
+      }
+      return false;
+    });
+    if (found) { available.push(ing); perIngredient.push({ orig: ing, norm: n, available: true }); }
+    else { missing.push(ing); perIngredient.push({ orig: ing, norm: n, available: false }); }
+  }
+  return { availableCount: available.length, total: recipe.ingredients.length, missing, perIngredient };
+}
+
+function renderRecipes() {
+  const container = document.getElementById('recipesList'); if (!container) return;
+  container.innerHTML = '';
+  const q = document.getElementById('recipeSearch')?.value.trim().toLowerCase() || '';
+  const dietFilter = document.getElementById('recipeDietFilter')?.value || 'all';
+  const sortMode = document.getElementById('recipeSort')?.value || 'recommended';
+
+  // prepare sorted list
+  const list = recipes.map(r => {
+    const match = computeRecipeMatch(r);
+    return { ...r, match };
+  }).filter(r => {
+    // diet filter
+    if (dietFilter !== 'all' && !(r.diet || []).includes(dietFilter)) return false;
+    // search
+    if (q) {
+      const hay = (r.title + ' ' + r.ingredients.join(' ')).toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  // sort according to recipeSort control
+  if (sortMode === 'recommended') {
+    list.sort((a,b) => (b.match.availableCount / b.match.total) - (a.match.availableCount / a.match.total));
+  } else if (sortMode === 'missing') {
+    // most ingredients match -> descending by availableCount
+    list.sort((a,b) => (b.match.availableCount - a.match.availableCount) || (a.title.localeCompare(b.title)));
+  } else if (sortMode === 'time') {
+    list.sort((a,b) => (a.time || 0) - (b.time || 0));
+  }
+
+  for (const r of list) {
+    const card = document.createElement('div'); card.className = 'recipe-card';
+    const head = document.createElement('div'); head.className = 'card-header';
+    const left = document.createElement('div'); left.style.display = 'flex'; left.style.alignItems = 'center'; left.style.gap = '8px';
+    const h3 = document.createElement('h3'); h3.textContent = r.title; left.appendChild(h3);
+    // diet badges
+    if (Array.isArray(r.diet)) {
+      for (const d of r.diet) {
+        const db = document.createElement('span'); db.className = 'diet-badge diet-' + String(d).toLowerCase().replace(/[^a-z0-9]+/g,'-'); db.textContent = d.charAt(0).toUpperCase() + d.slice(1);
+        left.appendChild(db);
+      }
+    }
+    head.appendChild(left);
+    const meta = document.createElement('div'); meta.className = 'meta'; meta.textContent = `${r.match.availableCount}/${r.match.total} ingredients available • ${r.time} min`;
+    head.appendChild(meta);
+    const toggle = document.createElement('button'); toggle.className = 'toggle-btn'; toggle.textContent = '+'; toggle.onclick = () => card.classList.toggle('expanded'); head.appendChild(toggle);
+    card.appendChild(head);
+
+    const content = document.createElement('div'); content.className = 'card-content';
+    const ingDiv = document.createElement('div'); ingDiv.className = 'ingredients'; const h4 = document.createElement('h4'); h4.textContent = 'Ingredients'; ingDiv.appendChild(h4);
+    const ul = document.createElement('ul');
+    // use perIngredient availability if present
+    const per = (r.match && r.match.perIngredient) || r.ingredients.map(i => ({ orig: i, norm: normalizeIngredient(i), available: false }));
+    for (const p of per) {
+      const li = document.createElement('li');
+      const pill = document.createElement('span');
+      pill.className = 'ing-pill ' + (p.available ? 'ing-available' : 'ing-missing');
+  pill.textContent = p.available ? '✓' : '✕';
+  pill.title = p.available ? 'Available in inventory' : 'Missing from inventory (✕)';
+      const text = document.createElement('span'); text.textContent = ' ' + toTitleCase(p.orig);
+      li.appendChild(pill); li.appendChild(text); ul.appendChild(li);
+    }
+    ingDiv.appendChild(ul);
+    content.appendChild(ingDiv);
+    const stepsDiv = document.createElement('div'); stepsDiv.className = 'steps'; const h4s = document.createElement('h4'); h4s.textContent = 'Steps'; stepsDiv.appendChild(h4s);
+    const ol = document.createElement('ol'); for (const s of r.steps) { const li = document.createElement('li'); li.textContent = s; ol.appendChild(li); } stepsDiv.appendChild(ol);
+    content.appendChild(stepsDiv);
+
+    // actions
+    const actions = document.createElement('div'); actions.className = 'card-actions';
+    const addBtn = document.createElement('button'); addBtn.className = 'btn'; addBtn.textContent = 'Add missing to Shopping';
+    addBtn.onclick = () => {
+      const missing = computeRecipeMatch(r).missing;
+      if (!missing || missing.length === 0) return;
+      showConfirmMissingModal(missing);
+    };
+    actions.appendChild(addBtn);
+    content.appendChild(actions);
+
+    card.appendChild(content);
+    container.appendChild(card);
+  }
+  // apply allergy filtering on the rendered set
+  filterRecipesByAllergies();
+}
+
+// wire recipe controls
+const recipeSearch = document.getElementById('recipeSearch');
+const recipeDietFilter = document.getElementById('recipeDietFilter');
+if (recipeSearch) recipeSearch.addEventListener('input', () => renderRecipes());
+if (recipeDietFilter) recipeDietFilter.addEventListener('change', () => renderRecipes());
+
+// render initially
+renderRecipes();
+
 // wiring
 const addAllergyBtn = document.getElementById('addAllergyBtn');
 const allergyInput = document.getElementById('allergyInput');
@@ -629,3 +904,49 @@ filterRecipesByAllergies();
 // call filtering after settings change
 if (saveSettingsBtn) saveSettingsBtn.addEventListener('click', () => filterRecipesByAllergies());
 if (resetSettingsBtn) resetSettingsBtn.addEventListener('click', () => filterRecipesByAllergies());
+
+/* ---------- Confirm-missing modal wiring ---------- */
+const confirmModal = document.getElementById('confirmMissingModal');
+const missingListEl = document.getElementById('missingList');
+const confirmAddMissingBtn = document.getElementById('confirmAddMissing');
+const cancelConfirmMissingBtn = document.getElementById('cancelConfirmMissing');
+const closeConfirmMissingBtn = document.getElementById('closeConfirmMissing');
+
+function showConfirmMissingModal(missing) {
+  if (!confirmModal || !missingListEl) return;
+  missingListEl.innerHTML = '';
+  // build a checkbox list
+  for (const m of missing) {
+    const id = 'miss_' + cid();
+    const lab = document.createElement('label'); lab.style.display = 'block';
+    const chk = document.createElement('input'); chk.type = 'checkbox'; chk.id = id; chk.checked = true; chk.dataset.name = String(m).trim();
+    const span = document.createElement('span'); span.textContent = ' ' + toTitleCase(m);
+    lab.appendChild(chk); lab.appendChild(span);
+    missingListEl.appendChild(lab);
+  }
+  confirmModal.classList.add('show'); confirmModal.setAttribute('aria-hidden','false');
+}
+
+function hideConfirmMissingModal() { if (!confirmModal) return; confirmModal.classList.remove('show'); confirmModal.setAttribute('aria-hidden','true'); }
+
+function confirmAddMissingHandler() {
+  if (!missingListEl) return;
+  const checks = Array.from(missingListEl.querySelectorAll('input[type="checkbox"]'));
+  let added = false;
+  for (const c of checks) {
+    if (!c.checked) continue;
+    const name = String(c.dataset.name || '').trim();
+    if (!name) continue;
+    if (!shopping.some(s => s.name.toLowerCase() === name.toLowerCase())) {
+      shopping.push({ id: cid(), name, category: 'other', bought: false, autoAdded: false, reason: 'manual' });
+      added = true;
+    }
+  }
+  if (added) { persistShop(); renderShopping(); }
+  hideConfirmMissingModal();
+}
+
+if (cancelConfirmMissingBtn) cancelConfirmMissingBtn.onclick = hideConfirmMissingModal;
+if (closeConfirmMissingBtn) closeConfirmMissingBtn.onclick = hideConfirmMissingModal;
+if (confirmAddMissingBtn) confirmAddMissingBtn.onclick = confirmAddMissingHandler;
+if (confirmModal) confirmModal.addEventListener('click', (e) => { if (e.target === confirmModal) hideConfirmMissingModal(); });
