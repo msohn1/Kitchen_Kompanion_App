@@ -105,6 +105,8 @@
 .inv-toolbar .btn:hover { filter: brightness(0.97); }
 .inv-toolbar .btn.accent { background: var(--accent); color: var(--black); border-color: transparent; }
 #invSearch { flex: 0 1 120px; min-width: 80px; max-width: 180px; padding: 8px 10px; border: 1px solid #e5e7eb; border-radius: 10px; }
+.inv-toolbar .btn.active { background: var(--brand-600); color: var(--white); border-color: transparent; }
+#invSearch { flex: 0 1 120px; min-width: 80px; max-width: 180px; padding: 8px 10px; border: 1px solid #e5e7eb; border-radius: 10px; }
 
 /* Category filter select */
 #filterCategory { padding: 8px 10px; border-radius: 10px; border: 1px solid #e5e7eb; background: #fff; }
@@ -195,6 +197,11 @@ td.category { color: var(--muted); }
 .source-badge.source-both { background: #FEF3C7; color: #92400E; }
 .source-badge.source-manual { background: #F3F4F6; color: #374151; }
 .source-badge.source-auto { background: #E6F0FF; color: #0B3D91; }
+/* recipe-sourced shopping badge: distinct warm accent */
+.source-badge.source-recipe { background: #FFF1F2; color: #9A1236; border: 1px solid rgba(154,18,54,0.08); }
+
+/* optional slight row highlight for recipe-sourced items */
+.row-source-recipe { background: linear-gradient(180deg, rgba(255,241,242,0.6), rgba(255,255,255,0)); }
 /* Per-category colors */
 .inv-table td.category .badge.cat-dairy, .inv-table td.category .badge.cat-dairy.cat { background: #FFF4E6; color: #9A4D00; }
 .inv-table td.category .badge.cat-carb, .inv-table td.category .badge.cat-carb.cat { background: #F5F0EA; color: #7A4B2B; }

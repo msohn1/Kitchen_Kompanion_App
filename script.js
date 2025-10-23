@@ -150,6 +150,20 @@ function passesFilter(item) {
   return true;
 }
 
+// Update visual active state for inventory filter buttons
+function updateInventoryFilterButtons() {
+  const map = [
+    { id: 'filterAll', val: 'all' },
+    { id: 'filterLow', val: 'low' },
+    { id: 'filterExpiring', val: 'expiring' }
+  ];
+  for (const m of map) {
+    const el = document.getElementById(m.id);
+    if (!el) continue;
+    if (currentFilter === m.val) el.classList.add('active'); else el.classList.remove('active');
+  }
+}
+
 /* ---------- Rendering ---------- */
 function renderInventory() {
   const tbody = document.getElementById("invBody");
@@ -225,6 +239,8 @@ function renderInventory() {
   }
   // After rendering inventory, ensure low/expiring items are present in shopping list
   syncLowExpiringToShopping();
+  // update button highlight states
+  updateInventoryFilterButtons();
 }
 
 // Ensure items that are low or expiring exist in the shopping list (no duplicates)
@@ -374,7 +390,7 @@ function renderShopping() {
     const src = String(it.reason || (it.autoAdded ? 'auto' : 'manual'));
     const srcBadge = document.createElement('span'); srcBadge.className = 'source-badge source-' + src.replace(/[^a-z0-9]+/g,'-');
     // user-friendly text
-    const labelMap = { manual: 'Manual', low: 'Low', expiring: 'Expiring', both: 'Low & Expiring', auto: 'Auto' };
+  const labelMap = { manual: 'Manual', low: 'Low', expiring: 'Expiring', both: 'Low & Expiring', auto: 'Auto', recipe: 'Recipe' };
     srcBadge.textContent = labelMap[src] || src;
     tdSource.appendChild(srcBadge);
 
@@ -386,6 +402,8 @@ function renderShopping() {
 
     // mark row visually when auto-added
     if (it.autoAdded) tr.classList.add('auto-row');
+    // mark row visually when recipe-sourced
+    if ((it.reason || '').toLowerCase() === 'recipe') tr.classList.add('row-source-recipe');
     tr.append(tdChk, tdName, tdCat, tdSource, tdAct);
     tbody.appendChild(tr);
   }
@@ -932,18 +950,34 @@ function hideConfirmMissingModal() { if (!confirmModal) return; confirmModal.cla
 function confirmAddMissingHandler() {
   if (!missingListEl) return;
   const checks = Array.from(missingListEl.querySelectorAll('input[type="checkbox"]'));
+  const noticeEl = document.getElementById('confirmNotice');
+  if (noticeEl) { noticeEl.style.display = 'none'; noticeEl.textContent = ''; }
   let added = false;
+  const skipped = [];
   for (const c of checks) {
     if (!c.checked) continue;
-    const name = String(c.dataset.name || '').trim();
-    if (!name) continue;
-    if (!shopping.some(s => s.name.toLowerCase() === name.toLowerCase())) {
-      shopping.push({ id: cid(), name, category: 'other', bought: false, autoAdded: false, reason: 'manual' });
-      added = true;
+    const rawName = String(c.dataset.name || '').trim();
+    if (!rawName) continue;
+    const exists = shopping.some(s => String(s.name || '').trim().toLowerCase() === rawName.toLowerCase());
+    if (exists) {
+      skipped.push(toTitleCase(rawName));
+      continue;
     }
+    // add as recipe-sourced item, store in Title Case for consistency
+    const name = toTitleCase(rawName);
+    shopping.push({ id: cid(), name, category: 'other', bought: false, autoAdded: false, reason: 'recipe' });
+    added = true;
   }
   if (added) { persistShop(); renderShopping(); }
-  hideConfirmMissingModal();
+  // show skipped/duplicate notice if any
+  if (skipped.length && noticeEl) {
+    noticeEl.textContent = 'Items are already in the shopping list: ' + skipped.join(', ');
+    noticeEl.style.display = '';
+    // keep the modal open so user can see the notice; they may close when ready
+  } else {
+    // no skips — close modal after adding
+    hideConfirmMissingModal();
+  }
 }
 
 if (cancelConfirmMissingBtn) cancelConfirmMissingBtn.onclick = hideConfirmMissingModal;
