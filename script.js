@@ -76,14 +76,34 @@ if (todayEl) todayEl.textContent = formattedDate;
 const INVENTORY_KEY = "kk_inventory_v1";
 let inventory = JSON.parse(localStorage.getItem(INVENTORY_KEY) || "[]");
 
+// normalize existing items to ensure category exists
+// migration: ensure category exists and try to infer category from name when missing/other
+function inferCategoryFromName(name) {
+  const s = String(name || '').toLowerCase();
+  if (!s) return 'other';
+  if (/milk|yogurt|butter|cheese|egg|eggs/.test(s)) return 'dairy';
+  if (/bacon|chicken|beef|pork|salmon|tuna|shrimp|meat/.test(s)) return 'protein';
+  if (/bread|rice|pasta|flour|cereal|noodle/.test(s)) return 'carb';
+  if (/spinach|lettuce|tomato|straw|berry|blueber|pea|carrot|produce|veggies|vegetable/.test(s)) return 'veggies';
+  if (/frozen|ice|frozen peas|frozen/.test(s)) return 'frozen';
+  if (/salt|sauce|ketchup|mustard|sugar|spice|condiment/.test(s)) return 'condiment';
+  return 'other';
+}
+
+inventory = inventory.map(it => {
+  const category = (it.category || '').toLowerCase();
+  const finalCat = (category && category !== 'other') ? category : inferCategoryFromName(it.name);
+  return { ...it, category: finalCat };
+});
+
 // Seed a few items the first time.
 if (inventory.length === 0) {
   inventory = [
-    { id: cid(), name: "Milk", qty: 0.5, unit: "gal", minQty: 0.5, expiry: addDaysISO(3) },
-    { id: cid(), name: "Eggs", qty: 6, unit: "pcs", minQty: 6, expiry: addDaysISO(7) },
-    { id: cid(), name: "Spinach", qty: 0.2, unit: "lb", minQty: 0.3, expiry: addDaysISO(2) },
-    { id: cid(), name: "Greek Yogurt", qty: 1, unit: "ct", minQty: 1, expiry: addDaysISO(10) },
-    { id: cid(), name: "Bacon", qty: 0.2, unit: "lb", minQty: 0.3, expiry: addDaysISO(5) }
+    { id: cid(), name: "Milk", qty: 0.5, unit: "gal", minQty: 0.5, expiry: addDaysISO(3), category: 'dairy' },
+    { id: cid(), name: "Eggs", qty: 6, unit: "pcs", minQty: 6, expiry: addDaysISO(7), category: 'dairy' },
+    { id: cid(), name: "Spinach", qty: 0.2, unit: "lb", minQty: 0.3, expiry: addDaysISO(2), category: 'veggies' },
+    { id: cid(), name: "Greek Yogurt", qty: 1, unit: "ct", minQty: 1, expiry: addDaysISO(10), category: 'dairy' },
+    { id: cid(), name: "Bacon", qty: 0.2, unit: "lb", minQty: 0.3, expiry: addDaysISO(5), category: 'protein' }
   ];
   persist();
 }
@@ -91,6 +111,7 @@ if (inventory.length === 0) {
 /* ---------- Inventory UI State ---------- */
 let currentFilter = "all"; // all | low | expiring
 let currentSearch = "";
+let currentCategory = "all"; // all or category key like 'dairy'
 
 /* ---------- Helpers ---------- */
 function cid() { return Math.random().toString(36).slice(2, 10); }
@@ -105,6 +126,13 @@ function addDaysISO(n) {
   return d.toISOString().slice(0,10);
 }
 
+function formatDateShort(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
 /* ---------- Filtering ---------- */
 function isLow(item) { return Number(item.qty) <= Number(item.minQty); }
 function isExpiring(item) {
@@ -114,6 +142,7 @@ function isExpiring(item) {
 function passesFilter(item) {
   if (currentFilter === "low" && !isLow(item)) return false;
   if (currentFilter === "expiring" && !isExpiring(item)) return false;
+  if (currentCategory !== "all" && (String(item.category || "").toLowerCase() !== String(currentCategory).toLowerCase())) return false;
   if (currentSearch) {
     const q = currentSearch.toLowerCase();
     if (!item.name.toLowerCase().includes(q)) return false;
@@ -138,35 +167,60 @@ function renderInventory() {
   for (const it of shown) {
     const tr = document.createElement("tr");
 
-    // Name + badges
+    // Name + badges (stacked): primary badges on first line, category on its own line below
     const tdName = document.createElement("td");
-    tdName.textContent = it.name;
+    const nameLine = document.createElement('div');
+    nameLine.className = 'name-line';
+    nameLine.textContent = it.name;
+
+    const badgeLine = document.createElement('div');
+    badgeLine.className = 'badge-line';
+    const badgeLeft = document.createElement('div'); badgeLeft.className = 'badge-col left';
+    const badgeRight = document.createElement('div'); badgeRight.className = 'badge-col right';
+    // primary badges: Low on left, Expiring on right
     if (isLow(it)) {
       const b = document.createElement("span");
       b.className = "badge low"; b.textContent = "Low";
-      tdName.append(" ", b);
+      badgeLeft.appendChild(b);
     }
     if (isExpiring(it)) {
       const b2 = document.createElement("span");
       b2.className = "badge exp"; b2.textContent = "Expiring";
-      tdName.append(" ", b2);
+      badgeRight.appendChild(b2);
     }
-
-    const tdQty = domTD("num", fmtNum(it.qty));
-    const tdUnit = domTD("", it.unit || "");
-    const tdMin  = domTD("num", fmtNum(it.minQty));
-    const tdExp  = domTD("", it.expiry || "");
-    const dleft  = daysUntil(it.expiry);
-    const tdDays = domTD("num", (dleft === "" ? "" : dleft));
+    badgeLine.appendChild(badgeLeft);
+    badgeLine.appendChild(badgeRight);
+  const tdQty = domTD("num", fmtNum(it.qty));
+  const tdUnit = domTD("", it.unit || "");
+    const tdCat = domTD("category", "");
+    if (it.category) {
+      const catBadge = document.createElement('span');
+      // add a category-specific class, sanitizing the category key to be a valid class name
+      const key = String(it.category || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      catBadge.className = 'badge cat cat-' + key;
+      catBadge.textContent = it.category.charAt(0).toUpperCase() + it.category.slice(1);
+      tdCat.appendChild(catBadge);
+    }
+  const tdExp  = domTD("", formatDateShort(it.expiry || ""));
+    // show category on its own line (unless both Low and Expiring present => hide for spacing)
+    const cat = String(it.category || "");
+    const showCategory = cat && !(isLow(it) && isExpiring(it));
+    tdName.appendChild(nameLine);
+    tdName.appendChild(badgeLine);
 
     const tdAct = document.createElement("td");
-    tdAct.style.textAlign = "right";
-  const minusBtn = makeRowBtn("−", () => adjustQty(it.id, -1)); minusBtn.classList.add('small');
-  const plusBtn = makeRowBtn("+", () => adjustQty(it.id, +1)); plusBtn.classList.add('small');
-  const delBtn = makeRowBtn("Delete", () => removeItem(it.id)); delBtn.classList.add('danger');
-  tdAct.append(minusBtn, " ", plusBtn, " ", delBtn);
+    tdAct.className = 'action-cell';
 
-    tr.append(tdName, tdQty, tdUnit, tdMin, tdExp, tdDays, tdAct);
+    const minusBtn = makeRowBtn("−", () => adjustQty(it.id, -1)); minusBtn.classList.add('small');
+    const plusBtn = makeRowBtn("+", () => adjustQty(it.id, +1)); plusBtn.classList.add('small');
+    const delBtn = makeRowBtn("Delete", () => removeItem(it.id)); delBtn.classList.add('danger');
+
+  // layout: single horizontal row with minus, plus, Delete
+  const actionsWrap = document.createElement('div'); actionsWrap.className = 'row-actions';
+  actionsWrap.append(minusBtn, plusBtn, delBtn);
+  tdAct.appendChild(actionsWrap);
+
+    tr.append(tdName, tdQty, tdUnit, tdCat, tdExp, tdAct);
     tbody.appendChild(tr);
   }
 }
@@ -195,7 +249,8 @@ function addItemFromForm(form) {
     qty: Number(data.get("qty")),
     unit: String(data.get("unit") || ""),
     minQty: Number(data.get("minQty")),
-    expiry: String(data.get("expiry") || "")
+    expiry: String(data.get("expiry") || ""),
+    category: String(data.get("category") || "other").toLowerCase()
   };
   if (!item.name) return;
   inventory.push(item);
@@ -226,6 +281,7 @@ function hideAddModal() { if (!addModal) return; addModal.classList.remove("show
 const fFilterAll = document.getElementById("filterAll");
 const fFilterLow = document.getElementById("filterLow");
 const fFilterExp = document.getElementById("filterExpiring");
+const fFilterCategory = document.getElementById("filterCategory");
 const fSearch = document.getElementById("invSearch");
 const openAddBtn = document.getElementById("openAddModal");
 const closeAddBtn = document.getElementById("closeAddModal");
@@ -235,6 +291,7 @@ const addForm = document.getElementById("addForm");
 if (fFilterAll) fFilterAll.onclick = () => { currentFilter = "all"; renderInventory(); };
 if (fFilterLow) fFilterLow.onclick = () => { currentFilter = "low"; renderInventory(); };
 if (fFilterExp) fFilterExp.onclick = () => { currentFilter = "expiring"; renderInventory(); };
+if (fFilterCategory) fFilterCategory.addEventListener('change', (e) => { currentCategory = e.target.value; renderInventory(); });
 if (fSearch) fSearch.addEventListener("input", (e) => { currentSearch = e.target.value.trim(); renderInventory(); });
 
 if (openAddBtn) openAddBtn.onclick = showAddModal;

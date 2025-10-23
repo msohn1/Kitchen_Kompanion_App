@@ -57,10 +57,14 @@
 }
 
 .tablink img {
-    width: 28px;
-    height: 28px;
-    filter: brightness(0) invert(1)
+  width: 28px;
+  height: 28px;
+  filter: brightness(0) invert(1);
+  display: block;
+  margin: 0 auto;
+  object-fit: contain;
 }
+
 
 .tablink.active {
   background: var(--brand-600);
@@ -84,24 +88,6 @@
     margin-top: -1px;
 }
 
-.line1 {
-    color: #FFFF00;
-    background: var(--black);
-}
-
-.line2 {
-    color: #6B21A8;
-    background: #FFFF00;
-}
-
-.profile {
-    text-align: center;
-}
-
-.profile img {
-    width: 100px;
-    cursor: pointer;
-}
 
 .alert {
     background: var(--danger);
@@ -117,7 +103,10 @@
 .inv-toolbar .btn { padding: 8px 12px; border-radius: 10px; border: 1px solid #e5e7eb; background: #fff; cursor: pointer; }
 .inv-toolbar .btn:hover { filter: brightness(0.97); }
 .inv-toolbar .btn.accent { background: var(--accent); color: var(--black); border-color: transparent; }
-#invSearch { flex: 1 1 220px; padding: 8px 10px; border: 1px solid #e5e7eb; border-radius: 10px; }
+#invSearch { flex: 0 1 140px; min-width: 100px; max-width: 260px; padding: 8px 10px; border: 1px solid #e5e7eb; border-radius: 10px; }
+
+/* Category filter select */
+#filterCategory { padding: 8px 10px; border-radius: 10px; border: 1px solid #e5e7eb; background: #fff; }
 
 .inv-wrap { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden; }
 .inv-table { width: 100%; border-collapse: collapse; }
@@ -127,6 +116,59 @@
 .badge { padding: 2px 8px; border-radius: 999px; font-size: 12px; }
 .badge.low { background: #FEF3C7; }
 .badge.exp { background: #FEE2E2; }
+
+/* explicit colors for Low and Expiring badges */
+.badge.low { background: #FEF3C7; color: #92400E; }
+.badge.exp { background: #FEE2E2; color: #991B1B; }
+
+/* category badge */
+.inv-table td .badge.cat { background: #eef2ff; color: var(--brand-700); font-weight: 600; margin-left: 6px; padding: 4px 8px; font-size: 12px; }
+
+/* category badge override */
+.inv-table td .badge { background: #eef2ff; color: var(--brand-700); font-weight: 600; padding: 4px 8px; font-size: 12px; }
+
+/* stacked badge layout */
+.name-line { font-weight: 600; margin-bottom: 6px; }
+.badge-line { display: flex; gap: 12px; align-items: center; }
+.badge-col { flex: 1 1 0; display: flex; gap: 8px; }
+.badge-col.left { justify-content: flex-start; }
+.badge-col.right { justify-content: flex-end; }
+
+/* ensure badges inside badge-line look good */
+.badge-line .badge { display: inline-block; padding: 4px 8px; border-radius: 999px; }
+
+/* category column styling */
+td:nth-child(4) { /* category column */
+  width: 90px;
+  text-align: left;
+}
+td.category { color: var(--muted); }
+
+/* Expiry column: wider and prevent wrapping */
+.inv-table thead th:nth-child(5),
+.inv-table td:nth-child(5) {
+  width: 140px;
+  white-space: nowrap;
+}
+
+/* category badge inside category column */
+.inv-table td.category .badge.cat { display: inline-block; padding: 4px 10px; border-radius: 999px; background: #eef2ff; color: var(--brand-700); font-weight: 600; }
+
+.action-cell { width: 140px; }
+.row-actions { display: flex; flex-direction: row; align-items: center; justify-content: flex-end; gap: 8px; }
+.row-actions .row-btn { padding: 4px 8px; }
+.primary-actions { display: none; }
+/* Per-category colors */
+.inv-table td.category .badge.cat-dairy, .inv-table td.category .badge.cat-dairy.cat { background: #FFF4E6; color: #9A4D00; }
+.inv-table td.category .badge.cat-carb, .inv-table td.category .badge.cat-carb.cat { background: #F5F0EA; color: #7A4B2B; }
+.inv-table td.category .badge.cat-veggies, .inv-table td.category .badge.cat-veggies.cat { background: #ECFDF5; color: #065F46; }
+.inv-table td.category .badge.cat-protein, .inv-table td.category .badge.cat-protein.cat { background: #F3E8FF; color: #5B21B6; }
+.inv-table td.category .badge.cat-condiment, .inv-table td.category .badge.cat-condiment.cat { background: #E6FFFA; color: #115E59; }
+.inv-table td.category .badge.cat-frozen, .inv-table td.category .badge.cat-frozen.cat { background: #EEF2FF; color: #1E3A8A; }
+.inv-table td.category .badge.cat-other, .inv-table td.category .badge.cat-other.cat { background: #F3F4F6; color: #374151; }
+/* common synonyms */
+.inv-table td.category .badge.cat-produce, .inv-table td.category .badge.cat-produce.cat { background: #ECFDF5; color: #065F46; }
+.inv-table td.category .badge.cat-meat, .inv-table td.category .badge.cat-meat.cat { background: #F3E8FF; color: #5B21B6; }
 
 /* Row action buttons: compact, macOS-like */
 .row-btn {

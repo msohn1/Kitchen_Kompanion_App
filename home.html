@@ -20,6 +20,15 @@
         <button class="btn" id="filterAll">All</button>
         <button class="btn" id="filterLow">Low stock</button>
         <button class="btn" id="filterExpiring">Expiring</button>
+        <select id="filterCategory">
+          <option value="all">All categories</option>
+          <option value="dairy">Dairy</option>
+          <option value="carb">Carb</option>
+          <option value="veggies">Veggies</option>
+          <option value="protein">Protein</option>
+          <option value="condiment">Condiment</option>
+          <option value="other">Other</option>
+        </select>
         <input id="invSearch" type="search" placeholder="Search items…" />
         <button class="btn accent" id="openAddModal">+ Add Item</button>
     </div>
@@ -31,9 +40,8 @@
         <th>Item</th>
         <th class="num">Qty</th>
         <th>Unit</th>
-        <th class="num">Min</th>
+        <th>Category</th>
         <th>Expiry</th>
-        <th class="num">Days</th>
         <th></th>
       </tr>
     </thead>
@@ -162,6 +170,17 @@
         <span>Expiry</span>
         <input name="expiry" type="date" />
       </label>
+      <label>
+        <span>Category</span>
+        <select name="category">
+          <option value="dairy">Dairy</option>
+          <option value="carb">Carb</option>
+          <option value="veggies">Veggies</option>
+          <option value="protein">Protein</option>
+          <option value="condiment">Condiment</option>
+          <option value="other" selected>Other</option>
+        </select>
+      </label>
 
       <div class="modal-actions">
         <button type="button" class="btn" id="cancelAdd">Cancel</button>
@@ -177,7 +196,7 @@
             <img src="icons/fridge.png" class = "icon-inventory" alt="inventory">Inventory</button>
 
         <button class="tablink" onclick="openTab('shopping')">
-            <img src="icons/shopping-cart.png" class = "icon-shopping" alt="shopping"><br>Shopping</button>
+            <img src="icons/price-list.png" class = "icon-shopping" alt="shopping">Shopping</button>
 
 
         <button class="tablink" onclick="openTab('recipes')">
