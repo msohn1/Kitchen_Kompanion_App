@@ -223,6 +223,45 @@ function renderInventory() {
     tr.append(tdName, tdQty, tdUnit, tdCat, tdExp, tdAct);
     tbody.appendChild(tr);
   }
+  // After rendering inventory, ensure low/expiring items are present in shopping list
+  syncLowExpiringToShopping();
+}
+
+// Ensure items that are low or expiring exist in the shopping list (no duplicates)
+function syncLowExpiringToShopping() {
+  if (!Array.isArray(shopping)) shopping = [];
+  let added = false;
+  // first cleanup any auto-added items that are no longer applicable
+  cleanupAutoAddedShopping();
+  for (const it of inventory) {
+    if (!it || !it.name) continue;
+    if (isLow(it) || isExpiring(it)) {
+      const key = String(it.name).trim().toLowerCase();
+      const exists = shopping.some(s => String(s.name || '').trim().toLowerCase() === key);
+      if (!exists) {
+        // determine reason
+        const low = isLow(it);
+        const exp = isExpiring(it);
+        const reason = low && exp ? 'both' : (low ? 'low' : (exp ? 'expiring' : 'auto'));
+        shopping.push({ id: cid(), name: it.name, category: String(it.category || 'other').toLowerCase(), bought: false, autoAdded: true, reason });
+        added = true;
+      }
+    }
+  }
+  // update reason for existing auto items if necessary
+  for (const s of shopping) {
+    if (!s.autoAdded) continue;
+    const inv = inventory.find(i => String(i.name || '').trim().toLowerCase() === String(s.name || '').trim().toLowerCase());
+    if (inv) {
+      const low = isLow(inv); const exp = isExpiring(inv);
+      const reason = low && exp ? 'both' : (low ? 'low' : (exp ? 'expiring' : 'auto'));
+      if (s.reason !== reason) { s.reason = reason; added = true; }
+    }
+  }
+  if (added) {
+    persistShop();
+    renderShopping();
+  }
 }
 
 function domTD(cls, text) {
@@ -277,6 +316,121 @@ const addModal = document.getElementById("addModal");
 function showAddModal() { if (!addModal) return; addModal.classList.add("show"); addModal.setAttribute("aria-hidden","false"); }
 function hideAddModal() { if (!addModal) return; addModal.classList.remove("show"); addModal.setAttribute("aria-hidden","true"); }
 
+/* ---------- Shopping Data & UI ---------- */
+const SHOPPING_KEY = 'kk_shopping_v1';
+let shopping = JSON.parse(localStorage.getItem(SHOPPING_KEY) || '[]');
+
+function persistShop() { localStorage.setItem(SHOPPING_KEY, JSON.stringify(shopping)); }
+
+function renderShopping() {
+  const tbody = document.getElementById('shopBody');
+  const empty = document.getElementById('shopEmpty');
+  if (!tbody || !empty) return;
+  tbody.innerHTML = '';
+  const filterCat = document.getElementById('shopFilterCategory')?.value || 'all';
+  const q = document.getElementById('shopSearch')?.value.trim().toLowerCase() || '';
+  const autoFilter = document.getElementById('shopAutoFilter')?.value || 'all';
+  const shown = shopping.filter(it => {
+    if (filterCat !== 'all' && String(it.category || '').toLowerCase() !== filterCat) return false;
+    if (q && !String(it.name || '').toLowerCase().includes(q)) return false;
+    // autoFilter: all | auto | manual
+    if (autoFilter === 'auto' && !it.autoAdded) return false;
+    if (autoFilter === 'manual' && it.autoAdded) return false;
+    return true;
+  }).sort((a,b) => a.name.localeCompare(b.name));
+  if (shown.length === 0) { empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden');
+  for (const it of shown) {
+    const tr = document.createElement('tr');
+  // checkbox column
+  const tdChk = document.createElement('td'); tdChk.className = 'chk-col';
+  const chk = document.createElement('input'); chk.type = 'checkbox'; chk.checked = !!it.bought; chk.className = 'row-check'; chk.onchange = () => { toggleBought(it.id); };
+  tdChk.appendChild(chk);
+
+  const tdName = document.createElement('td');
+  const nameLine = document.createElement('div');
+  nameLine.className = 'name-line';
+  nameLine.textContent = it.name;
+  if (it.bought) nameLine.style.textDecoration = 'line-through';
+  const badgeLine = document.createElement('div'); badgeLine.className = 'badge-line';
+  tdName.append(nameLine, badgeLine);
+
+    const tdCat = document.createElement('td');
+    if (it.category) {
+      const c = document.createElement('span'); c.className = 'badge cat cat-' + String(it.category).toLowerCase().replace(/[^a-z0-9]+/g,'-'); c.textContent = it.category.charAt(0).toUpperCase() + it.category.slice(1);
+      tdCat.appendChild(c);
+    }
+    // visual marker for auto-added items
+    if (it.autoAdded) {
+      const autoMark = document.createElement('span'); autoMark.className = 'auto-mark'; autoMark.textContent = 'Auto'; autoMark.title = 'Automatically added from inventory (low/expiring)';
+      tdCat.appendChild(autoMark);
+    }
+
+    // Source column (manual | low | expiring | both)
+    const tdSource = document.createElement('td');
+    const src = String(it.reason || (it.autoAdded ? 'auto' : 'manual'));
+    const srcBadge = document.createElement('span'); srcBadge.className = 'source-badge source-' + src.replace(/[^a-z0-9]+/g,'-');
+    // user-friendly text
+    const labelMap = { manual: 'Manual', low: 'Low', expiring: 'Expiring', both: 'Low & Expiring', auto: 'Auto' };
+    srcBadge.textContent = labelMap[src] || src;
+    tdSource.appendChild(srcBadge);
+
+    const tdAct = document.createElement('td'); tdAct.className = 'action-cell';
+    const actionsWrap = document.createElement('div'); actionsWrap.className = 'row-actions';
+    const del = document.createElement('button'); del.className = 'btn row-btn danger small'; del.textContent = 'Delete'; del.onclick = () => removeShopItem(it.id);
+    actionsWrap.append(del);
+    tdAct.append(actionsWrap);
+
+    // mark row visually when auto-added
+    if (it.autoAdded) tr.classList.add('auto-row');
+    tr.append(tdChk, tdName, tdCat, tdSource, tdAct);
+    tbody.appendChild(tr);
+  }
+}
+
+// Remove auto-added shopping items when their inventory source is no longer low/expiring
+function cleanupAutoAddedShopping() {
+  if (!Array.isArray(shopping) || !Array.isArray(inventory)) return;
+  const preserved = [];
+  let changed = false;
+  for (const s of shopping) {
+    if (!s.autoAdded) { preserved.push(s); continue; }
+    // find matching inventory item by name
+    const key = String(s.name || '').trim().toLowerCase();
+    const inv = inventory.find(i => String(i.name || '').trim().toLowerCase() === key);
+    if (!inv) {
+      // if inventory item removed, keep the shopping entry (user might still want to buy)
+      preserved.push(s);
+    } else {
+      // if inventory item exists but is no longer low/expiring, drop the auto-added shopping entry
+      if (isLow(inv) || isExpiring(inv)) {
+        preserved.push(s);
+      } else {
+        changed = true;
+      }
+    }
+  }
+  if (changed) { shopping = preserved; persistShop(); renderShopping(); }
+}
+
+function addShopItemFromForm(form) {
+  const data = new FormData(form);
+  const item = { id: cid(), name: String(data.get('name')).trim(), category: String(data.get('category') || 'other').toLowerCase(), bought: false, autoAdded: false, reason: 'manual' };
+  if (!item.name) return;
+  shopping.push(item);
+  persistShop();
+  renderShopping();
+}
+
+function removeShopItem(id) {
+  shopping = shopping.filter(x => x.id !== id);
+  persistShop(); renderShopping();
+}
+
+function toggleBought(id) {
+  const it = shopping.find(x => x.id === id); if (!it) return; it.bought = !it.bought; persistShop(); renderShopping();
+}
+
 /* ---------- Wire up events ---------- */
 const fFilterAll = document.getElementById("filterAll");
 const fFilterLow = document.getElementById("filterLow");
@@ -287,6 +441,16 @@ const openAddBtn = document.getElementById("openAddModal");
 const closeAddBtn = document.getElementById("closeAddModal");
 const cancelAddBtn = document.getElementById("cancelAdd");
 const addForm = document.getElementById("addForm");
+
+// Shopping UI elements
+const openAddShopBtn = document.getElementById('openAddShopModal');
+const closeAddShopBtn = document.getElementById('closeAddShopModal');
+const cancelAddShopBtn = document.getElementById('cancelAddShop');
+const addShopForm = document.getElementById('addShopForm');
+const shopFilterCategory = document.getElementById('shopFilterCategory');
+const shopSearch = document.getElementById('shopSearch');
+const shopAutoFilter = document.getElementById('shopAutoFilter');
+
 
 if (fFilterAll) fFilterAll.onclick = () => { currentFilter = "all"; renderInventory(); };
 if (fFilterLow) fFilterLow.onclick = () => { currentFilter = "low"; renderInventory(); };
@@ -308,6 +472,22 @@ if (addForm) {
   });
 }
 
+// Shopping modal wiring
+const addShopModal = document.getElementById('addShopModal');
+function showAddShopModal() { if (!addShopModal) return; addShopModal.classList.add('show'); addShopModal.setAttribute('aria-hidden','false'); }
+function hideAddShopModal() { if (!addShopModal) return; addShopModal.classList.remove('show'); addShopModal.setAttribute('aria-hidden','true'); }
+
+if (openAddShopBtn) openAddShopBtn.onclick = showAddShopModal;
+if (closeAddShopBtn) closeAddShopBtn.onclick = hideAddShopModal;
+if (cancelAddShopBtn) cancelAddShopBtn.onclick = hideAddShopModal;
+if (addShopModal) addShopModal.addEventListener('click', (e) => { if (e.target === addShopModal) hideAddShopModal(); });
+if (addShopForm) {
+  addShopForm.addEventListener('submit', (e) => { e.preventDefault(); addShopItemFromForm(e.target); e.target.reset(); hideAddShopModal(); });
+}
+if (shopFilterCategory) shopFilterCategory.addEventListener('change', () => renderShopping());
+if (shopSearch) shopSearch.addEventListener('input', () => renderShopping());
+if (shopAutoFilter) shopAutoFilter.addEventListener('change', () => renderShopping());
+
 
 function toggleExpand(selectedCard) {
   const allCards = document.querySelectorAll('.recipe-card');
@@ -323,3 +503,4 @@ function toggleExpand(selectedCard) {
 
 /* ---------- Initial paint on load ---------- */
 renderInventory();
+renderShopping();

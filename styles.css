@@ -99,6 +99,7 @@
 /* Inventory UI */
 .inv-toolbar {
   display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px;
+  font-size: 14px;
 }
 .inv-toolbar .btn { padding: 8px 12px; border-radius: 10px; border: 1px solid #e5e7eb; background: #fff; cursor: pointer; }
 .inv-toolbar .btn:hover { filter: brightness(0.97); }
@@ -158,6 +159,41 @@ td.category { color: var(--muted); }
 .row-actions { display: flex; flex-direction: row; align-items: center; justify-content: flex-end; gap: 8px; }
 .row-actions .row-btn { padding: 4px 8px; }
 .primary-actions { display: none; }
+
+/* Shopping toolbar should match inventory toolbar */
+#shopFilterCategory { padding: 8px 10px; border-radius: 10px; border: 1px solid #e5e7eb; background: #fff; font-size: 14px; }
+#shopSearch { flex: 0 1 140px; min-width: 100px; max-width: 260px; padding: 8px 10px; border: 1px solid #e5e7eb; border-radius: 10px; font-size: 14px; }
+.shop-toolbar.inv-toolbar #shopAutoFilter { padding: 8px 10px; border-radius: 10px; border: 1px solid #e5e7eb; background: #fff; font-size: 14px; }
+.shop-toolbar.inv-toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; font-size: 14px; }
+.shop-toolbar.inv-toolbar .btn { padding: 8px 12px; border-radius: 10px; border: 1px solid #e5e7eb; background: #fff; cursor: pointer; }
+.shop-toolbar.inv-toolbar .btn.accent { background: var(--accent); color: var(--black); border-color: transparent; }
+
+/* Shopping table tweaks */
+#shopTable td { vertical-align: middle; }
+#shopTable td input[type="checkbox"], #shopTable .row-check { transform: translateY(0); margin: 0; }
+#shopTable td.chk-col { width: 46px; text-align: center; }
+#shopTable .row-check { width: 20px; height: 20px; accent-color: var(--brand-700); }
+#shopTable .row-check:checked { box-shadow: 0 0 0 3px rgba(30,64,175,0.08); }
+#shopTable .action-cell { width: 110px; }
+#shopTable .row-btn.small { padding: 4px 6px; font-size: 12px; }
+
+/* Make category badges inside shop table use same category colors */
+#shopTable td .badge.cat { display: inline-block; padding: 4px 10px; border-radius: 999px; background: #eef2ff; color: var(--brand-700); font-weight: 600; }
+
+/* Auto-added marker */
+.auto-mark { display: inline-block; margin-left: 8px; padding: 2px 6px; background: #F3F4F6; color: #374151; border-radius: 999px; font-size: 11px; font-weight: 600; }
+
+/* Auto-row visual treatment */
+.auto-row { background: linear-gradient(180deg, rgba(238,242,255,0.6), rgba(255,255,255,0)); }
+.auto-row .auto-mark { background: #E6F0FF; color: #0B3D91; }
+
+/* Source badge */
+.source-badge { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.source-badge.source-low { background: #FEF3C7; color: #92400E; }
+.source-badge.source-expiring { background: #FEE2E2; color: #991B1B; }
+.source-badge.source-both { background: #FEF3C7; color: #92400E; }
+.source-badge.source-manual { background: #F3F4F6; color: #374151; }
+.source-badge.source-auto { background: #E6F0FF; color: #0B3D91; }
 /* Per-category colors */
 .inv-table td.category .badge.cat-dairy, .inv-table td.category .badge.cat-dairy.cat { background: #FFF4E6; color: #9A4D00; }
 .inv-table td.category .badge.cat-carb, .inv-table td.category .badge.cat-carb.cat { background: #F5F0EA; color: #7A4B2B; }
@@ -215,6 +251,9 @@ td.category { color: var(--muted); }
 .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .grid label { display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
 .grid input { padding: 8px 10px; border: 1px solid #e5e7eb; border-radius: 10px; }
+/* Modal selects should match toolbar/select styling */
+.grid select, .grid select#addShopCategory { padding: 8px 10px; border: 1px solid #e5e7eb; border-radius: 10px; background: #fff; font-size: 14px; }
+.grid label span { font-size: 13px; color: var(--muted); }
 .modal-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px; }
 
 .recipe-card {

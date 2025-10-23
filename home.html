@@ -12,6 +12,40 @@
 <div class = "app">
     <div id="shopping" class="tabcontent">
         <h2>Shopping List</h2>
+        <div class="shop-toolbar inv-toolbar">
+          <select id="shopFilterCategory">
+            <option value="all">All categories</option>
+            <option value="dairy">Dairy</option>
+            <option value="carb">Carb</option>
+            <option value="veggies">Veggies</option>
+            <option value="protein">Protein</option>
+            <option value="condiment">Condiment</option>
+            <option value="other">Other</option>
+          </select>
+          <select id="shopAutoFilter">
+            <option value="all">All items</option>
+            <option value="auto">Auto-added</option>
+            <option value="manual">Manual</option>
+          </select>
+          <input id="shopSearch" type="search" placeholder="Search items…" />
+          <button class="btn accent" id="openAddShopModal">+ Add Item</button>
+        </div>
+
+        <div class="inv-wrap">
+          <table class="inv-table" id="shopTable">
+            <thead>
+              <tr>
+                  <th class="chk-col"></th>
+                  <th>Item</th>
+                  <th>Category</th>
+                  <th>Source</th>
+                  <th></th>
+                </tr>
+            </thead>
+            <tbody id="shopBody"></tbody>
+          </table>
+          <p id="shopEmpty" class="muted hidden">No items in shopping list.</p>
+        </div>
     </div>
 
     <div id="inventory" class="tabcontent">
@@ -138,7 +172,7 @@
   </div>
 
   <div id="setting" class="tabcontent">
-        <h2>Nothing here yet</h2>
+        <h2>Setting</h2>
     </div>
 
     <!-- Add Item Modal -->
@@ -172,7 +206,7 @@
       </label>
       <label>
         <span>Category</span>
-        <select name="category">
+        <select id="addShopCategory" name="category">
           <option value="dairy">Dairy</option>
           <option value="carb">Carb</option>
           <option value="veggies">Veggies</option>
@@ -208,6 +242,37 @@
     </div>
 </div>
 
+
+<!-- Add Shopping Item Modal -->
+<div class="modal" id="addShopModal" aria-hidden="true">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>Add Shopping Item</h3>
+      <button class="icon-btn" id="closeAddShopModal" aria-label="Close">×</button>
+    </div>
+    <form id="addShopForm" class="grid">
+      <label>
+        <span>Name</span>
+        <input required name="name" type="text" placeholder="e.g., Milk" />
+      </label>
+      <label>
+        <span>Category</span>
+        <select name="category">
+          <option value="dairy">Dairy</option>
+          <option value="carb">Carb</option>
+          <option value="veggies">Veggies</option>
+          <option value="protein">Protein</option>
+          <option value="condiment">Condiment</option>
+          <option value="other" selected>Other</option>
+        </select>
+      </label>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="cancelAddShop">Cancel</button>
+        <button type="submit" class="btn accent">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
 
     <script src="script.js"></script>
 
