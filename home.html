@@ -11,7 +11,7 @@
 <body>
 <div class = "app">
     <div id="shopping" class="tabcontent">
-        <h2>Shopping List</h2>
+        <!-- <h2>Shopping List</h2> -->
         <div class="shop-toolbar inv-toolbar">
           <select id="shopFilterCategory">
             <option value="all">All categories</option>
@@ -22,12 +22,9 @@
             <option value="condiment">Condiment</option>
             <option value="other">Other</option>
           </select>
-          <select id="shopAutoFilter">
-            <option value="all">All items</option>
-            <option value="auto">Auto-added</option>
-            <option value="manual">Manual</option>
-          </select>
-          <input id="shopSearch" type="search" placeholder="Search items…" />
+          
+          <input id="shopSearch" type="search" placeholder="Search..." />
+           <button class="btn" id="transferBought">Transfer Items</button>
           <button class="btn accent" id="openAddShopModal">+ Add Item</button>
         </div>
 
@@ -37,6 +34,7 @@
               <tr>
                   <th class="chk-col"></th>
                   <th>Item</th>
+                  <th class="num">Qty</th>
                   <th>Category</th>
                   <th>Source</th>
                   <th></th>
@@ -49,10 +47,10 @@
     </div>
 
     <div id="inventory" class="tabcontent">
-        <h2>Inventory</h2>
+        <!-- <h2>Inventory</h2> -->
         <div class="inv-toolbar">
         <button class="btn" id="filterAll">All</button>
-        <button class="btn" id="filterLow">Low stock</button>
+        <button class="btn" id="filterLow">Low</button>
         <button class="btn" id="filterExpiring">Expiring</button>
         <select id="filterCategory">
           <option value="all">All categories</option>
@@ -63,7 +61,7 @@
           <option value="condiment">Condiment</option>
           <option value="other">Other</option>
         </select>
-        <input id="invSearch" type="search" placeholder="Search items…" />
+        <input id="invSearch" type="search" placeholder="Search..." />
         <button class="btn accent" id="openAddModal">+ Add Item</button>
     </div>
 
@@ -86,7 +84,7 @@
     </div>
 
 <div id="recipes" class="tabcontent">
-      <h2>Suggested Recipes</h2>
+      <!-- <h2>Suggested Recipes</h2> -->
       <div class="inv-toolbar recipe-toolbar">
         <input id="recipeSearch" type="search" placeholder="Search recipes, ingredients…" />
         <select id="recipeSort">
@@ -106,7 +104,7 @@
     </div>
 
     <div id="setting" class="tabcontent">
-        <h2>Settings</h2>
+        <!-- <h2>Settings</h2> -->
 
         <form id="settingsForm" class="grid settings-grid">
           <fieldset>
@@ -117,7 +115,6 @@
               <label><input type="checkbox" name="diet" value="pescatarian"> Pescatarian</label>
               <label><input type="checkbox" name="diet" value="gluten-free"> Gluten-free</label>
               <label><input type="checkbox" name="diet" value="dairy-free"> Dairy-free</label>
-              <label><input type="checkbox" name="diet" value="nut-free"> Nut-free</label>
             </div>
           </fieldset>
 
@@ -138,9 +135,7 @@
               <label><input type="checkbox" name="allergy" value="sulfites"> Sulfites</label>
               <label><input type="checkbox" name="allergy" value="celery"> Celery</label>
               <label><input type="checkbox" name="allergy" value="mollusks"> Mollusks</label>
-              <label><input type="checkbox" name="allergy" value="other"> Other
-                <input type="text" name="allergy-other" placeholder="specify" class="small-input" />
-              </label>
+              <label><input type="checkbox" name="allergy" value="corn"> Corn</label>
             </div>
           </fieldset>
 
@@ -242,21 +237,21 @@
 </div>
 
 
-    <div class="tabbar">
-        <button class="tablink" onclick="openTab('inventory')">
-            <img src="icons/fridge.png" class = "icon-inventory" alt="inventory">Inventory</button>
+  <div class="tabbar">
+    <button class="tablink" onclick="openTab('inventory')">
+      <span class="tab-icon icon-inventory" aria-hidden="true"></span>Inventory</button>
 
-        <button class="tablink" onclick="openTab('shopping')">
-            <img src="icons/price-list.png" class = "icon-shopping" alt="shopping">Shopping</button>
+    <button class="tablink" onclick="openTab('shopping')">
+      <span class="tab-icon icon-shopping" aria-hidden="true"></span>Shopping</button>
 
 
-        <button class="tablink" onclick="openTab('recipes')">
-            <img src="icons/cookbook.png" class = "icon-recipes" alt="recipes">Recipes</button>
+    <button class="tablink" onclick="openTab('recipes')">
+      <span class="tab-icon icon-recipes" aria-hidden="true"></span>Recipes</button>
 
-        <button class="tablink" onclick="openTab('setting')">
-            <img src="icons/cogwheel.png" class = "icon-setting" alt="Profile">Setting</button>
+    <button class="tablink" onclick="openTab('setting')">
+      <span class="tab-icon icon-setting" aria-hidden="true"></span>Setting</button>
 
-    </div>
+  </div>
 </div>
 
 
@@ -271,6 +266,10 @@
       <label>
         <span>Name</span>
         <input required name="name" type="text" placeholder="e.g., Milk" />
+      </label>
+      <label>
+        <span>Quantity</span>
+        <input required name="qty" type="number" min="1" step="1" value="1" />
       </label>
       <label>
         <span>Category</span>
@@ -290,6 +289,47 @@
     </form>
   </div>
 </div>
+
+<!-- Generic Confirm Modal -->
+<div class="modal" id="confirmModal" aria-hidden="true" role="dialog" aria-labelledby="confirmTitle">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3 id="confirmTitle">Confirm</h3>
+      <button class="icon-btn" id="closeConfirmModal" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <p id="confirmMessage">Are you sure?</p>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn" id="confirmCancel">Cancel</button>
+      <button type="button" class="btn accent" id="confirmOk">Confirm</button>
+    </div>
+  </div>
+ </div>
+
+<!-- Edit Inventory Cell Modal -->
+<div class="modal" id="editCellModal" aria-hidden="true">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3 id="editCellTitle">Edit</h3>
+      <button class="icon-btn" id="closeEditCellModal" aria-label="Close">×</button>
+    </div>
+    <form id="editCellForm" class="grid" style="grid-template-columns: 1fr;">
+      <label id="editQtyLabel">
+        <span>Quantity</span>
+        <input id="editQtyInput" type="number" min="0" step="0.01" />
+      </label>
+      <label id="editExpiryLabel" style="display:none;">
+        <span>Expiry</span>
+        <input id="editExpiryInput" type="date" />
+      </label>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="cancelEditCell">Cancel</button>
+        <button type="submit" class="btn accent" id="saveEditCell">Save</button>
+      </div>
+    </form>
+  </div>
+ </div>
 
     <script src="script.js"></script>
 

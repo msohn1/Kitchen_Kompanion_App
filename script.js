@@ -75,6 +75,32 @@ if (todayEl) todayEl.textContent = formattedDate;
 /* ---------- Inventory Data ---------- */
 const INVENTORY_KEY = "kk_inventory_v1";
 let inventory = JSON.parse(localStorage.getItem(INVENTORY_KEY) || "[]");
+// Auto-add snooze (prevents immediate reappearance in Shopping after transfer)
+const SNOOZE_KEY = 'kk_snooze_v1';
+const AUTO_ADD_SNOOZE_DAYS = 4; // default snooze window in days
+let autoSnooze = {};
+try { autoSnooze = JSON.parse(localStorage.getItem(SNOOZE_KEY) || '{}') || {}; } catch { autoSnooze = {}; }
+function persistSnooze() { localStorage.setItem(SNOOZE_KEY, JSON.stringify(autoSnooze)); }
+function setSnooze(name, days = AUTO_ADD_SNOOZE_DAYS) {
+  const key = String(name || '').trim().toLowerCase();
+  if (!key) return;
+  const d = new Date(); d.setDate(d.getDate() + Number(days || 0));
+  autoSnooze[key] = d.toISOString();
+  persistSnooze();
+}
+function isSnoozed(name) {
+  const key = String(name || '').trim().toLowerCase();
+  if (!key) return false;
+  const iso = autoSnooze[key];
+  if (!iso) return false;
+  const until = new Date(iso);
+  if (!until || Number.isNaN(until.getTime())) { delete autoSnooze[key]; persistSnooze(); return false; }
+  const now = new Date();
+  if (now < until) return true;
+  // expired snooze -> cleanup
+  delete autoSnooze[key]; persistSnooze();
+  return false;
+}
 
 // normalize existing items to ensure category exists
 // migration: ensure category exists and try to infer category from name when missing/other
@@ -204,7 +230,7 @@ function renderInventory() {
     }
     badgeLine.appendChild(badgeLeft);
     badgeLine.appendChild(badgeRight);
-  const tdQty = domTD("num", fmtNum(it.qty));
+  const tdQty = makeQtyEditableCell(it);
   const tdUnit = domTD("", it.unit || "");
     const tdCat = domTD("category", "");
     if (it.category) {
@@ -215,7 +241,7 @@ function renderInventory() {
       catBadge.textContent = it.category.charAt(0).toUpperCase() + it.category.slice(1);
       tdCat.appendChild(catBadge);
     }
-  const tdExp  = domTD("", formatDateShort(it.expiry || ""));
+  const tdExp  = makeExpiryEditableCell(it);
     // show category on its own line (unless both Low and Expiring present => hide for spacing)
     const cat = String(it.category || "");
     const showCategory = cat && !(isLow(it) && isExpiring(it));
@@ -251,6 +277,8 @@ function syncLowExpiringToShopping() {
   cleanupAutoAddedShopping();
   for (const it of inventory) {
     if (!it || !it.name) continue;
+    // Skip if recently transferred and within snooze window
+    if (isSnoozed(it.name)) continue;
     if (isLow(it) || isExpiring(it)) {
       const key = String(it.name).trim().toLowerCase();
       const exists = shopping.some(s => String(s.name || '').trim().toLowerCase() === key);
@@ -259,7 +287,7 @@ function syncLowExpiringToShopping() {
         const low = isLow(it);
         const exp = isExpiring(it);
         const reason = low && exp ? 'both' : (low ? 'low' : (exp ? 'expiring' : 'auto'));
-        shopping.push({ id: cid(), name: it.name, category: String(it.category || 'other').toLowerCase(), bought: false, autoAdded: true, reason });
+        shopping.push({ id: cid(), name: it.name, qty: 1, category: String(it.category || 'other').toLowerCase(), bought: false, autoAdded: true, reason });
         added = true;
       }
     }
@@ -295,8 +323,42 @@ function makeRowBtn(label, fn) {
   return b;
 }
 
+// Editable cells for Inventory Qty and Expiry
+function makeQtyEditableCell(it) {
+  const td = document.createElement('td');
+  td.className = 'num editable-cell editable-qty';
+  td.textContent = fmtNum(it.qty);
+  td.tabIndex = 0;
+  const openModal = () => showEditCellModal(it.id, 'qty');
+  td.addEventListener('click', openModal);
+  td.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModal(); } });
+  return td;
+}
+
+function makeExpiryEditableCell(it) {
+  const td = document.createElement('td');
+  td.className = 'editable-cell editable-expiry';
+  td.textContent = formatDateShort(it.expiry || '');
+  td.tabIndex = 0;
+  const openModal = () => showEditCellModal(it.id, 'expiry');
+  td.addEventListener('click', openModal);
+  td.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModal(); } });
+  return td;
+}
+
+function makeShopQtyEditableCell(it) {
+  const td = document.createElement('td');
+  td.className = 'num editable-cell editable-qty';
+  td.textContent = it.qty || 1;
+  td.tabIndex = 0;
+  const openModal = () => showEditCellModal(it.id, 'qty', 'shopping');
+  td.addEventListener('click', openModal);
+  td.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModal(); } });
+  return td;
+}
+
 /* ---------- Mutations ---------- */
-function addItemFromForm(form) {
+async function addItemFromForm(form) {
   const data = new FormData(form);
   const item = {
     id: cid(),
@@ -307,22 +369,45 @@ function addItemFromForm(form) {
     expiry: String(data.get("expiry") || ""),
     category: String(data.get("category") || "other").toLowerCase()
   };
-  if (!item.name) return;
+  if (!item.name) return false;
+  // Prevent duplicates by name (case-insensitive)
+  const exists = inventory.some(x => String(x.name || '').trim().toLowerCase() === item.name.toLowerCase());
+  if (exists) {
+    await confirmDialog(`"${item.name}" is already in your Inventory. Adjust its quantity instead.`, { title: 'Duplicate item', okText: 'OK' });
+    return false;
+  }
   inventory.push(item);
   persist();
   renderInventory();
+  return true;
 }
 
-function removeItem(id) {
+async function removeItem(id) {
+  const it = inventory.find(x => x.id === id);
+  const name = it?.name || 'this item';
+  const ok = await confirmDialog(`Are you sure you want to delete "${name}" from inventory?`, { title: 'Delete item', okText: 'Confirm' });
+  if (!ok) return;
   inventory = inventory.filter(x => x.id !== id);
   persist();
   renderInventory();
 }
 
-function adjustQty(id, delta) {
+async function adjustQty(id, delta) {
   const it = inventory.find(x => x.id === id);
   if (!it) return;
-  it.qty = Math.max(0, Number(it.qty) + delta);
+  const current = Number(it.qty) || 0;
+  const next = current + delta;
+  // If decrement would take qty to 0 or below, confirm delete instead of setting 0
+  if (next <= 0) {
+    const ok = await confirmDialog(`Quantity would be ${next}. Delete "${it.name}" from inventory?`, { title: 'Delete item', okText: 'Confirm' });
+    if (!ok) return; // Do not change qty
+    // Inline delete to avoid double-confirm
+    inventory = inventory.filter(x => x.id !== id);
+    persist();
+    renderInventory();
+    return;
+  }
+  it.qty = next;
   persist();
   renderInventory();
 }
@@ -371,6 +456,9 @@ function renderShopping() {
   const badgeLine = document.createElement('div'); badgeLine.className = 'badge-line';
   tdName.append(nameLine, badgeLine);
 
+    // Quantity column - editable with modal
+    const tdQty = makeShopQtyEditableCell(it);
+
     const tdCat = document.createElement('td');
     if (it.category) {
       const c = document.createElement('span'); c.className = 'badge cat cat-' + String(it.category).toLowerCase().replace(/[^a-z0-9]+/g,'-'); c.textContent = it.category.charAt(0).toUpperCase() + it.category.slice(1);
@@ -396,15 +484,31 @@ function renderShopping() {
 
     const tdAct = document.createElement('td'); tdAct.className = 'action-cell';
     const actionsWrap = document.createElement('div'); actionsWrap.className = 'row-actions';
-    const del = document.createElement('button'); del.className = 'btn row-btn danger small'; del.textContent = 'Delete'; del.onclick = () => removeShopItem(it.id);
-    actionsWrap.append(del);
+    
+    // Add -/+ buttons and Delete button in same row
+    const minusBtn = document.createElement('button');
+    minusBtn.className = 'btn row-btn small';
+    minusBtn.textContent = '−';
+    minusBtn.onclick = () => adjustShopQty(it.id, -1);
+    
+    const plusBtn = document.createElement('button');
+    plusBtn.className = 'btn row-btn small';
+    plusBtn.textContent = '+';
+    plusBtn.onclick = () => adjustShopQty(it.id, +1);
+    
+    const del = document.createElement('button'); 
+    del.className = 'btn row-btn danger'; 
+    del.textContent = 'Delete'; 
+    del.onclick = () => removeShopItem(it.id);
+    
+    actionsWrap.append(minusBtn, plusBtn, del);
     tdAct.append(actionsWrap);
 
     // mark row visually when auto-added
     if (it.autoAdded) tr.classList.add('auto-row');
     // mark row visually when recipe-sourced
     if ((it.reason || '').toLowerCase() === 'recipe') tr.classList.add('row-source-recipe');
-    tr.append(tdChk, tdName, tdCat, tdSource, tdAct);
+    tr.append(tdChk, tdName, tdQty, tdCat, tdSource, tdAct);
     tbody.appendChild(tr);
   }
 }
@@ -434,18 +538,56 @@ function cleanupAutoAddedShopping() {
   if (changed) { shopping = preserved; persistShop(); renderShopping(); }
 }
 
-function addShopItemFromForm(form) {
+async function addShopItemFromForm(form) {
   const data = new FormData(form);
-  const item = { id: cid(), name: String(data.get('name')).trim(), category: String(data.get('category') || 'other').toLowerCase(), bought: false, autoAdded: false, reason: 'manual' };
-  if (!item.name) return;
+  const item = { 
+    id: cid(), 
+    name: String(data.get('name')).trim(), 
+    qty: Number(data.get('qty')) || 1,
+    category: String(data.get('category') || 'other').toLowerCase(), 
+    bought: false, 
+    autoAdded: false, 
+    reason: 'manual' 
+  };
+  if (!item.name) return false;
+  // Prevent duplicates in Shopping by name (case-insensitive)
+  const exists = shopping.some(x => String(x.name || '').trim().toLowerCase() === item.name.toLowerCase());
+  if (exists) {
+    await confirmDialog(`"${item.name}" is already in your Shopping list. Adjust its quantity instead.`, { title: 'Duplicate item', okText: 'OK' });
+    return false;
+  }
   shopping.push(item);
   persistShop();
   renderShopping();
+  return true;
 }
 
-function removeShopItem(id) {
+async function removeShopItem(id) {
+  const it = shopping.find(x => x.id === id);
+  const name = it?.name || 'this item';
+  const ok = await confirmDialog(`Are you sure you want to delete "${name}" from shopping?`, { title: 'Delete item', okText: 'Confirm' });
+  if (!ok) return;
   shopping = shopping.filter(x => x.id !== id);
   persistShop(); renderShopping();
+}
+
+async function adjustShopQty(id, delta) {
+  const it = shopping.find(x => x.id === id);
+  if (!it) return;
+  const current = Number(it.qty) || 1;
+  const next = current + delta;
+  if (next <= 0) {
+    const ok = await confirmDialog(`Quantity would be ${next}. Delete "${it.name}" from shopping?`, { title: 'Delete item', okText: 'Confirm' });
+    if (!ok) return; // Do not change qty
+    // Inline delete to avoid double-confirm
+    shopping = shopping.filter(x => x.id !== id);
+    persistShop();
+    renderShopping();
+    return;
+  }
+  it.qty = next;
+  persistShop();
+  renderShopping();
 }
 
 function toggleBought(id) {
@@ -471,6 +613,7 @@ const addShopForm = document.getElementById('addShopForm');
 const shopFilterCategory = document.getElementById('shopFilterCategory');
 const shopSearch = document.getElementById('shopSearch');
 const shopAutoFilter = document.getElementById('shopAutoFilter');
+const transferBoughtBtn = document.getElementById('transferBought');
 
 
 if (fFilterAll) fFilterAll.onclick = () => { currentFilter = "all"; renderInventory(); };
@@ -485,11 +628,10 @@ if (cancelAddBtn) cancelAddBtn.onclick = hideAddModal;
 if (addModal) addModal.addEventListener("click", (e) => { if (e.target === addModal) hideAddModal(); });
 
 if (addForm) {
-  addForm.addEventListener("submit", (e) => {
+  addForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    addItemFromForm(e.target);
-    e.target.reset();
-    hideAddModal();
+    const ok = await addItemFromForm(e.target);
+    if (ok) { e.target.reset(); hideAddModal(); }
   });
 }
 
@@ -503,11 +645,171 @@ if (closeAddShopBtn) closeAddShopBtn.onclick = hideAddShopModal;
 if (cancelAddShopBtn) cancelAddShopBtn.onclick = hideAddShopModal;
 if (addShopModal) addShopModal.addEventListener('click', (e) => { if (e.target === addShopModal) hideAddShopModal(); });
 if (addShopForm) {
-  addShopForm.addEventListener('submit', (e) => { e.preventDefault(); addShopItemFromForm(e.target); e.target.reset(); hideAddShopModal(); });
+  addShopForm.addEventListener('submit', async (e) => { 
+    e.preventDefault(); 
+    const ok = await addShopItemFromForm(e.target); 
+    if (ok) { e.target.reset(); hideAddShopModal(); }
+  });
 }
 if (shopFilterCategory) shopFilterCategory.addEventListener('change', () => renderShopping());
 if (shopSearch) shopSearch.addEventListener('input', () => renderShopping());
 if (shopAutoFilter) shopAutoFilter.addEventListener('change', () => renderShopping());
+if (transferBoughtBtn) transferBoughtBtn.onclick = async () => {
+  const purchased = (shopping || []).filter(it => !!it.bought);
+  const count = purchased.length;
+  if (count === 0) {
+    // Friendly notice using confirm dialog fallback
+    await confirmDialog('No purchased items are checked. Mark items as bought first, then try again.', { title: 'Nothing to transfer', okText: 'OK' });
+    return;
+  }
+  const ok = await confirmDialog(`Transfer ${count} purchased item${count>1?'s':''} to Inventory? This will add quantities to existing items (if names match) or create new items, and remove them from Shopping.`, { title: 'Transfer to Inventory', okText: 'Confirm' });
+  if (!ok) return;
+  transferPurchasedToInventory(purchased);
+};
+
+/* ---------- Edit inventory cell modal (Qty/Expiry) ---------- */
+const editCellModal = document.getElementById('editCellModal');
+const closeEditCellModalBtn = document.getElementById('closeEditCellModal');
+const editCellTitle = document.getElementById('editCellTitle');
+const editCellForm = document.getElementById('editCellForm');
+const editQtyLabel = document.getElementById('editQtyLabel');
+const editQtyInput = document.getElementById('editQtyInput');
+const editExpiryLabel = document.getElementById('editExpiryLabel');
+const editExpiryInput = document.getElementById('editExpiryInput');
+const cancelEditCellBtn = document.getElementById('cancelEditCell');
+
+let currentEdit = { id: null, field: null, source: 'inventory' };
+
+function showEditCellModal(id, field, source = 'inventory') {
+  const it = source === 'shopping' ? shopping.find(x => x.id === id) : inventory.find(x => x.id === id);
+  if (!it || !editCellModal) return;
+  currentEdit = { id, field, source };
+  if (field === 'qty') {
+    editCellTitle.textContent = 'Edit Quantity';
+    editQtyLabel.style.display = '';
+    editExpiryLabel.style.display = 'none';
+    editQtyInput.value = String(Number(it.qty) || (source === 'shopping' ? 1 : 0));
+    setTimeout(() => editQtyInput?.focus(), 0);
+  } else {
+    editCellTitle.textContent = 'Edit Expiry';
+    editQtyLabel.style.display = 'none';
+    editExpiryLabel.style.display = '';
+    editExpiryInput.value = (it.expiry && /^\d{4}-\d{2}-\d{2}$/.test(String(it.expiry))) ? it.expiry : '';
+    setTimeout(() => editExpiryInput?.focus(), 0);
+  }
+  editCellModal.classList.add('show'); editCellModal.setAttribute('aria-hidden','false');
+}
+function hideEditCellModal() { if (!editCellModal) return; editCellModal.classList.remove('show'); editCellModal.setAttribute('aria-hidden','true'); currentEdit = { id:null, field:null, source:'inventory' }; }
+
+if (closeEditCellModalBtn) closeEditCellModalBtn.onclick = hideEditCellModal;
+if (cancelEditCellBtn) cancelEditCellBtn.onclick = hideEditCellModal;
+if (editCellModal) editCellModal.addEventListener('click', (e) => { if (e.target === editCellModal) hideEditCellModal(); });
+if (editCellForm) editCellForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const source = currentEdit.source;
+  const it = source === 'shopping' ? shopping.find(x => x.id === currentEdit.id) : inventory.find(x => x.id === currentEdit.id);
+  if (!it) { hideEditCellModal(); return; }
+  if (currentEdit.field === 'qty') {
+    const v = Number(editQtyInput.value);
+    if (!Number.isFinite(v) || v < 0) { hideEditCellModal(); return; }
+    it.qty = v;
+  } else {
+    // expiry can be blank
+    it.expiry = String(editExpiryInput.value || '');
+  }
+  if (source === 'shopping') {
+    persistShop();
+    renderShopping();
+  } else {
+    persist();
+    renderInventory();
+  }
+  hideEditCellModal();
+});
+
+function transferPurchasedToInventory(items) {
+  if (!Array.isArray(items) || items.length === 0) return;
+  let invChanged = false;
+  // 1) Merge into Inventory first
+  for (const s of items) {
+    if (!s || !s.name) continue;
+    const key = String(s.name).trim().toLowerCase();
+    const inv = inventory.find(i => String(i.name || '').trim().toLowerCase() === key);
+    if (inv) {
+      const addQty = Number(s.qty) || 1;
+      inv.qty = (Number(inv.qty) || 0) + addQty;
+      invChanged = true;
+    } else {
+      const cat = String(s.category || '').toLowerCase() || inferCategoryFromName(s.name);
+      inventory.push({ id: cid(), name: toTitleCase(s.name), qty: Number(s.qty) || 1, unit: '', minQty: 0, expiry: '', category: cat || 'other' });
+      invChanged = true;
+    }
+    // Snooze auto-add for this item to avoid immediate reappearance in Shopping
+    setSnooze(s.name, AUTO_ADD_SNOOZE_DAYS);
+  }
+  if (invChanged) { persist(); renderInventory(); }
+
+  // 2) Remove transferred items from Shopping (by id, with name fallback)
+  const ids = new Set(items.map(x => x && x.id).filter(Boolean));
+  const names = new Set(items.map(x => String(x && x.name || '').trim().toLowerCase()).filter(Boolean));
+  const nextShopping = [];
+  let shopChanged = false;
+  for (const it of shopping) {
+    const shouldRemove = (ids.has(it.id)) || (it.bought && names.has(String(it.name || '').trim().toLowerCase()));
+    if (shouldRemove) { shopChanged = true; continue; }
+    nextShopping.push(it);
+  }
+  if (shopChanged) { shopping = nextShopping; persistShop(); renderShopping(); }
+}
+
+
+// Reusable confirmation modal
+const confirmModal = document.getElementById('confirmModal');
+const confirmTitleEl = document.getElementById('confirmTitle');
+const confirmMessageEl = document.getElementById('confirmMessage');
+const confirmOkBtn = document.getElementById('confirmOk');
+const confirmCancelBtn = document.getElementById('confirmCancel');
+const closeConfirmModalBtn = document.getElementById('closeConfirmModal');
+
+function showConfirmModal() { if (!confirmModal) return; confirmModal.classList.add('show'); confirmModal.setAttribute('aria-hidden','false'); }
+function hideConfirmModal() { if (!confirmModal) return; confirmModal.classList.remove('show'); confirmModal.setAttribute('aria-hidden','true'); }
+
+function confirmDialog(message, opts = {}) {
+  if (!confirmModal) {
+    // Fallback to native confirm if custom modal not present
+    return Promise.resolve(window.confirm(typeof message === 'string' ? message : 'Are you sure?'));
+  }
+  const { title = 'Confirm', okText = 'OK', cancelText = 'Cancel', okVariant = 'accent' } = opts;
+  confirmTitleEl.textContent = title;
+  confirmMessageEl.textContent = message || '';
+  confirmOkBtn.textContent = okText;
+  confirmCancelBtn.textContent = cancelText;
+  // set button style variant
+  confirmOkBtn.classList.remove('accent','danger');
+  confirmOkBtn.classList.add(okVariant === 'danger' ? 'danger' : 'accent');
+
+  return new Promise((resolve) => {
+    const onOk = () => { cleanup(); hideConfirmModal(); resolve(true); };
+    const onCancel = () => { cleanup(); hideConfirmModal(); resolve(false); };
+    const onKey = (e) => { if (e.key === 'Escape') { onCancel(); } }
+    const onBackdrop = (e) => { if (e.target === confirmModal) { onCancel(); } };
+
+    function cleanup() {
+      confirmOkBtn.removeEventListener('click', onOk);
+      confirmCancelBtn.removeEventListener('click', onCancel);
+      if (closeConfirmModalBtn) closeConfirmModalBtn.removeEventListener('click', onCancel);
+      window.removeEventListener('keydown', onKey);
+      confirmModal.removeEventListener('click', onBackdrop);
+    }
+
+    confirmOkBtn.addEventListener('click', onOk);
+    confirmCancelBtn.addEventListener('click', onCancel);
+    if (closeConfirmModalBtn) closeConfirmModalBtn.addEventListener('click', onCancel);
+    window.addEventListener('keydown', onKey);
+    confirmModal.addEventListener('click', onBackdrop);
+    showConfirmModal();
+  });
+}
 
 
 function toggleExpand(selectedCard) {
@@ -546,7 +848,7 @@ const ALLERGY_OPTIONS = [
   { key: 'sulfites', label: 'Sulfites' },
   { key: 'celery', label: 'Celery' },
   { key: 'mollusks', label: 'Mollusks' },
-  { key: 'other', label: 'Other' }
+  { key: 'corn', label: 'Corn' }
 ];
 const ALLERGY_KEYS = ALLERGY_OPTIONS.map(o => o.key);
 
@@ -564,7 +866,8 @@ const ALLERGY_KEYWORDS = {
   'mustard': ['mustard'],
   'sulfites': ['sulfite','sulphite','sulphites'],
   'celery': ['celery'],
-  'mollusks': ['clam','oyster','mussel','scallop','mollusk']
+  'mollusks': ['clam','oyster','mussel','scallop','mollusk'],
+  'corn': ['corn','maize','corn syrup']
 };
 
 // Expanded ingredient synonyms mapping. Broad set covering cheeses, herbs, veg variants, proteins, canned/frozen forms and pantry items.
@@ -661,33 +964,39 @@ function renderSettings() {
   // allergies: set checkboxes from settings.allergies
   const allergySet = new Set((settings.allergies || []).map(x => String(x).toLowerCase()));
   document.querySelectorAll('input[name="allergy"]').forEach(chk => { chk.checked = allergySet.has(chk.value); });
-  // other allergy text (stored separately in settings.otherAllergies)
-  const otherInput = document.querySelector('input[name="allergy-other"]'); if (otherInput) otherInput.value = settings.otherAllergies || '';
   // skill
   const skill = document.getElementById('skillSelect'); if (skill) skill.value = settings.skill || 'beginner';
   // food pref
   const fp = document.getElementById('foodPref'); if (fp) fp.value = settings.foodPref || 'none';
 }
 
-function loadSettings() { settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); renderSettings(); }
+function loadSettings() {
+  settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+  // Migration: remove deprecated 'nut-free' diet option if present
+  if (Array.isArray(settings.diet) && settings.diet.includes('nut-free')) {
+    settings.diet = settings.diet.filter(d => d !== 'nut-free');
+    persistSettings();
+  }
+  renderSettings();
+}
 
 function saveSettingsFromForm() {
   const sel = Array.from(document.querySelectorAll('input[name="diet"]:checked')).map(i => i.value);
   settings.diet = sel;
   // collect allergies from predefined checkboxes and optional other text
   const allergies = Array.from(document.querySelectorAll('input[name="allergy"]:checked')).map(c => c.value);
-  const other = String(document.querySelector('input[name="allergy-other"]')?.value || '').trim();
   settings.allergies = allergies; // only keys
-  settings.otherAllergies = other || '';
   settings.skill = document.getElementById('skillSelect')?.value || 'beginner';
   settings.foodPref = document.getElementById('foodPref')?.value || 'none';
-  persistSettings(); renderSettings();
+  persistSettings(); 
+  renderSettings();
+  // Re-render recipes to apply new filters
+  renderRecipes();
 }
 
 // recipe filtering: hide recipes that contain any selected allergy keywords
 function filterRecipesByAllergies() {
   const selected = new Set((settings.allergies || []).map(s => String(s).toLowerCase()));
-  const other = String(settings.otherAllergies || '').toLowerCase();
   const recipeCards = document.querySelectorAll('.recipe-card');
   for (const card of recipeCards) {
     const ingEls = card.querySelectorAll('.ingredients li');
@@ -702,16 +1011,13 @@ function filterRecipesByAllergies() {
       }
       if (exclude) break;
     }
-    if (!exclude && other) {
-      const reOther = new RegExp('\\b' + escapeRegExp(other) + '\\b', 'i');
-      if (reOther.test(text)) exclude = true;
-    }
     if (exclude) card.classList.add('hidden'); else card.classList.remove('hidden');
   }
 }
 
 /* ---------- Recipes (data-driven) ---------- */
 const recipes = [
+  // Beginner recipes
   {
     id: 'r1', title: 'Breakfast Sandwich', time: 10, difficulty: 'beginner', diet: [],
     ingredients: ['bread','egg','bacon','cheese'],
@@ -726,10 +1032,9 @@ const recipes = [
     id: 'r3', title: 'Mozzarella Toast', time: 8, difficulty: 'beginner', diet: ['vegetarian'],
     ingredients: ['bread','tomato','mozzarella','olive oil'],
     steps: ['Brush bread with olive oil and toast lightly.','Add tomato and mozzarella slices on top.','Toast again until cheese melts.']
-  }
-  ,
+  },
   {
-    id: 'r4', title: 'Avocado Toast', time: 6, difficulty: 'beginner', diet: ['vegan'],
+    id: 'r4', title: 'Avocado Toast', time: 6, difficulty: 'beginner', diet: ['vegan','vegetarian'],
     ingredients: ['bread','avocado','lemon','salt','pepper'],
     steps: ['Toast the bread to desired crispness.','Mash avocado with lemon, salt and pepper.','Spread avocado mix on toast and serve.']
   },
@@ -739,7 +1044,7 @@ const recipes = [
     steps: ['Cook pasta until al dente.','Sauté garlic in olive oil, add vegetables and cook until tender.','Toss pasta with vegetables and finish with parmesan.']
   },
   {
-    id: 'r6', title: 'Stir-Fry Veggies & Tofu', time: 20, difficulty: 'novice', diet: ['vegan'],
+    id: 'r6', title: 'Stir-Fry Veggies & Tofu', time: 20, difficulty: 'novice', diet: ['vegan','vegetarian'],
     ingredients: ['tofu','broccoli','carrot','soy sauce','garlic','rice'],
     steps: ['Press and cube tofu, then pan-fry until golden.','Stir-fry vegetables with garlic, add tofu and soy sauce.','Serve over steamed rice.']
   },
@@ -747,8 +1052,206 @@ const recipes = [
     id: 'r7', title: 'Beef Tacos', time: 18, difficulty: 'novice', diet: [],
     ingredients: ['ground beef','taco shell','lettuce','cheddar','salsa'],
     steps: ['Brown ground beef and season as desired.','Warm taco shells.','Assemble tacos with beef, lettuce, cheese and salsa.']
+  },
+  // Additional beginner recipes
+  {
+    id: 'r8', title: 'Scrambled Eggs', time: 5, difficulty: 'beginner', diet: ['vegetarian'],
+    ingredients: ['eggs','butter','salt','pepper','milk'],
+    steps: ['Beat eggs with milk, salt and pepper.','Melt butter in a pan over medium heat.','Pour in eggs and gently stir until cooked.']
+  },
+  {
+    id: 'r9', title: 'Grilled Cheese Sandwich', time: 8, difficulty: 'beginner', diet: ['vegetarian'],
+    ingredients: ['bread','cheddar','butter'],
+    steps: ['Butter bread slices on one side.','Place cheese between unbuttered sides.','Grill in pan until golden and cheese melts.']
+  },
+  {
+    id: 'r10', title: 'Peanut Butter Banana Toast', time: 5, difficulty: 'beginner', diet: ['vegan','vegetarian'],
+    ingredients: ['bread','peanut butter','banana','honey'],
+    steps: ['Toast the bread.','Spread peanut butter on toast.','Slice banana and arrange on top, drizzle with honey.']
+  },
+  // Novice recipes
+  {
+    id: 'r11', title: 'Spaghetti Aglio e Olio', time: 20, difficulty: 'novice', diet: ['vegan','vegetarian'],
+    ingredients: ['spaghetti','garlic','olive oil','red pepper flakes','parsley'],
+    steps: ['Cook spaghetti until al dente.','Sauté sliced garlic in olive oil until golden.','Toss pasta with garlic oil and red pepper flakes.','Garnish with fresh parsley.']
+  },
+  {
+    id: 'r12', title: 'Chicken Quesadilla', time: 15, difficulty: 'novice', diet: [],
+    ingredients: ['chicken breast','tortilla','cheddar','bell pepper','onion'],
+    steps: ['Cook and dice chicken breast.','Sauté peppers and onions.','Fill tortilla with chicken, veggies, and cheese, fold and grill until crispy.']
+  },
+  {
+    id: 'r13', title: 'Vegetable Fried Rice', time: 25, difficulty: 'novice', diet: ['vegan','vegetarian'],
+    ingredients: ['rice','carrot','peas','corn','soy sauce','garlic','green onion'],
+    steps: ['Cook rice and let it cool.','Sauté garlic, then add vegetables.','Add rice and soy sauce, stir-fry until heated through.','Garnish with green onions.']
+  },
+  {
+    id: 'r14', title: 'Salmon Teriyaki', time: 20, difficulty: 'novice', diet: ['pescatarian'],
+    ingredients: ['salmon','soy sauce','honey','garlic','ginger','rice'],
+    steps: ['Mix soy sauce, honey, garlic and ginger for marinade.','Marinate salmon for 10 minutes.','Pan-fry or bake salmon until cooked.','Serve over rice.']
+  },
+  {
+    id: 'r15', title: 'Caprese Salad', time: 10, difficulty: 'beginner', diet: ['vegetarian'],
+    ingredients: ['tomato','mozzarella','basil','olive oil','balsamic vinegar','salt'],
+    steps: ['Slice tomatoes and mozzarella.','Arrange alternating slices on a plate.','Add fresh basil leaves.','Drizzle with olive oil and balsamic, season with salt.']
+  },
+  // Intermediate recipes
+  {
+    id: 'r16', title: 'Chicken Piccata', time: 35, difficulty: 'intermediate', diet: [],
+    ingredients: ['chicken breast','flour','butter','lemon','capers','white wine','parsley'],
+    steps: ['Pound chicken thin and dredge in flour.','Pan-fry chicken in butter until golden.','Make sauce with lemon, capers, wine, and pan drippings.','Pour sauce over chicken and garnish with parsley.']
+  },
+  {
+    id: 'r17', title: 'Vegetable Curry', time: 40, difficulty: 'intermediate', diet: ['vegan','vegetarian'],
+    ingredients: ['potato','carrot','cauliflower','coconut milk','curry powder','onion','garlic','ginger','rice'],
+    steps: ['Sauté onion, garlic, and ginger.','Add curry powder and vegetables.','Pour in coconut milk and simmer until vegetables are tender.','Serve over rice.']
+  },
+  {
+    id: 'r18', title: 'Shrimp Scampi', time: 25, difficulty: 'intermediate', diet: ['pescatarian'],
+    ingredients: ['shrimp','pasta','garlic','butter','white wine','lemon','parsley','red pepper flakes'],
+    steps: ['Cook pasta until al dente.','Sauté garlic in butter, add shrimp and cook until pink.','Add wine, lemon juice and red pepper flakes.','Toss with pasta and garnish with parsley.']
+  },
+  {
+    id: 'r19', title: 'Mushroom Risotto', time: 45, difficulty: 'intermediate', diet: ['vegetarian'],
+    ingredients: ['arborio rice','mushroom','onion','white wine','vegetable broth','parmesan','butter','garlic'],
+    steps: ['Sauté mushrooms and set aside.','Sauté onion and garlic, add rice and toast.','Add wine, then gradually add warm broth while stirring constantly.','Stir in mushrooms, butter, and parmesan.']
+  },
+  {
+    id: 'r20', title: 'Beef Stir-Fry', time: 30, difficulty: 'intermediate', diet: [],
+    ingredients: ['beef','broccoli','bell pepper','soy sauce','ginger','garlic','cornstarch','rice'],
+    steps: ['Slice beef thin and marinate with soy sauce and cornstarch.','Stir-fry beef over high heat, set aside.','Stir-fry vegetables with ginger and garlic.','Return beef to pan, toss everything together.','Serve over rice.']
+  },
+  // Expert recipes
+  {
+    id: 'r21', title: 'Beef Wellington', time: 120, difficulty: 'expert', diet: [],
+    ingredients: ['beef tenderloin','puff pastry','mushroom','shallot','butter','egg','prosciutto','dijon mustard'],
+    steps: ['Sear beef on all sides, brush with mustard.','Make mushroom duxelles with finely chopped mushrooms and shallots.','Wrap beef in prosciutto and mushroom mixture.','Encase in puff pastry, brush with egg wash.','Bake until pastry is golden and beef is cooked to desired doneness.']
+  },
+  {
+    id: 'r22', title: 'Coq au Vin', time: 90, difficulty: 'expert', diet: [],
+    ingredients: ['chicken','bacon','onion','carrot','garlic','red wine','chicken broth','mushroom','tomato paste','thyme','bay leaf'],
+    steps: ['Brown chicken pieces and bacon, set aside.','Sauté vegetables in the same pan.','Add tomato paste, wine, broth, and herbs.','Return chicken and bacon, simmer for 45 minutes.','Add mushrooms and cook until tender.']
+  },
+  {
+    id: 'r23', title: 'Vegetarian Lasagna', time: 75, difficulty: 'expert', diet: ['vegetarian'],
+    ingredients: ['lasagna noodles','ricotta','mozzarella','parmesan','spinach','zucchini','tomato sauce','onion','garlic','egg','basil'],
+    steps: ['Sauté vegetables with garlic and onion.','Mix ricotta with egg, spinach, and herbs.','Layer noodles, ricotta mixture, vegetables, sauce, and cheese.','Repeat layers, ending with cheese on top.','Bake covered for 45 minutes, then uncovered for 15 minutes until golden.']
+  },
+  {
+    id: 'r24', title: 'Seared Scallops with Risotto', time: 60, difficulty: 'expert', diet: ['pescatarian'],
+    ingredients: ['scallops','arborio rice','white wine','vegetable broth','lemon','butter','shallot','parmesan','asparagus'],
+    steps: ['Make risotto by toasting rice, adding wine and gradually adding broth while stirring.','Blanch and chop asparagus, stir into risotto with parmesan.','Pat scallops dry, season well.','Sear scallops in hot butter until golden crust forms, about 2 minutes per side.','Serve scallops over risotto with lemon butter sauce.']
+  },
+  {
+    id: 'r25', title: 'Duck Confit', time: 150, difficulty: 'expert', diet: [],
+    ingredients: ['duck legs','duck fat','garlic','thyme','bay leaf','salt','pepper'],
+    steps: ['Cure duck legs with salt, pepper, thyme, and garlic overnight.','Rinse and pat dry duck legs.','Submerge duck in melted duck fat in a deep pan.','Cook in low oven (250°F) for 2-3 hours until tender.','Crisp skin in hot pan before serving.']
+  },
+  // Additional recipes for preferences
+  {
+    id: 'r26', title: 'Cauliflower Rice Bowl', time: 20, difficulty: 'novice', diet: ['vegan','vegetarian'],
+    ingredients: ['cauliflower','chickpea','tahini','lemon','garlic','spinach','olive oil'],
+    steps: ['Rice cauliflower in food processor.','Sauté cauliflower rice with garlic.','Roast chickpeas with spices.','Assemble bowl with cauliflower rice, chickpeas, spinach, and tahini dressing.']
+  },
+  {
+    id: 'r27', title: 'Protein Pancakes', time: 15, difficulty: 'beginner', diet: ['vegetarian'],
+    ingredients: ['egg','banana','protein powder','oats','cinnamon','butter'],
+    steps: ['Blend eggs, banana, protein powder, oats, and cinnamon.','Heat butter in pan.','Pour batter to make pancakes, flip when bubbles form.','Serve with toppings of choice.']
+  },
+  {
+    id: 'r28', title: 'Zucchini Noodles with Pesto', time: 15, difficulty: 'novice', diet: ['vegetarian'],
+    ingredients: ['zucchini','basil','pine nuts','parmesan','garlic','olive oil','lemon'],
+    steps: ['Spiralize zucchini into noodles.','Make pesto by blending basil, pine nuts, parmesan, garlic, and olive oil.','Toss zucchini noodles with pesto.','Add lemon juice and serve.']
+  },
+  {
+    id: 'r29', title: 'Grilled Chicken Salad', time: 25, difficulty: 'novice', diet: [],
+    ingredients: ['chicken breast','lettuce','tomato','cucumber','avocado','olive oil','lemon','salt','pepper'],
+    steps: ['Season and grill chicken breast.','Chop lettuce, tomato, cucumber, and avocado.','Slice cooked chicken.','Toss salad with olive oil and lemon dressing, top with chicken.']
+  },
+  {
+    id: 'r30', title: 'Lentil Soup', time: 45, difficulty: 'intermediate', diet: ['vegan','vegetarian'],
+    ingredients: ['lentils','carrot','celery','onion','garlic','vegetable broth','tomato','cumin','bay leaf'],
+    steps: ['Sauté onion, carrot, celery, and garlic.','Add lentils, broth, tomatoes, cumin, and bay leaf.','Simmer for 30 minutes until lentils are tender.','Season to taste and serve.']
   }
 ];
+
+// Helper to check if recipe matches dietary restrictions
+function recipeMatchesDiet(recipe) {
+  if (!settings.diet || settings.diet.length === 0) return true;
+  const userDiets = new Set(settings.diet.map(d => d.toLowerCase()));
+  
+  // If user has dietary restrictions, recipe must match at least one
+  if (userDiets.has('vegan')) {
+    return recipe.diet.includes('vegan');
+  }
+  if (userDiets.has('vegetarian')) {
+    return recipe.diet.includes('vegetarian') || recipe.diet.includes('vegan');
+  }
+  if (userDiets.has('pescatarian')) {
+    // Pescatarian can eat vegetarian, vegan, and pescatarian recipes
+    return recipe.diet.includes('pescatarian') || recipe.diet.includes('vegetarian') || recipe.diet.includes('vegan');
+  }
+  if (userDiets.has('gluten-free')) {
+    // Check if recipe has wheat/gluten ingredients
+    const glutenIngredients = ['bread','pasta','flour','wheat','spaghetti','noodles','tortilla','puff pastry','lasagna noodles'];
+    const hasGluten = recipe.ingredients.some(ing => 
+      glutenIngredients.some(g => normalizeIngredient(ing).includes(g) || normalizeIngredient(g).includes(normalizeIngredient(ing)))
+    );
+    if (hasGluten) return false;
+  }
+  if (userDiets.has('dairy-free')) {
+    const dairyIngredients = ['milk','cheese','butter','cream','yogurt','parmesan','mozzarella','cheddar','ricotta'];
+    const hasDairy = recipe.ingredients.some(ing => 
+      dairyIngredients.some(d => normalizeIngredient(ing).includes(d) || normalizeIngredient(d).includes(normalizeIngredient(ing)))
+    );
+    if (hasDairy) return false;
+  }
+  
+  return true;
+}
+
+// Helper to check if recipe matches skill level
+function recipeMatchesSkill(recipe) {
+  const skill = settings.skill || 'beginner';
+  const skillHierarchy = { 'beginner': 0, 'novice': 1, 'intermediate': 2, 'expert': 3 };
+  const userLevel = skillHierarchy[skill] || 0;
+  const recipeLevel = skillHierarchy[recipe.difficulty] || 0;
+  
+  // Show recipes at or below user's skill level
+  return recipeLevel <= userLevel;
+}
+
+// Helper to check if recipe matches food preference
+function recipeMatchesFoodPreference(recipe) {
+  const pref = settings.foodPref || 'none';
+  if (pref === 'none') return true;
+  
+  if (pref === 'vegetarian') {
+    return recipe.diet.includes('vegetarian') || recipe.diet.includes('vegan');
+  }
+  if (pref === 'vegan') {
+    return recipe.diet.includes('vegan');
+  }
+  if (pref === 'low-carb') {
+    // Prefer recipes without high-carb ingredients
+    const carbIngredients = ['bread','pasta','rice','potato','tortilla','noodles'];
+    const hasHighCarbs = recipe.ingredients.some(ing => 
+      carbIngredients.some(c => normalizeIngredient(ing).includes(c))
+    );
+    // Don't completely exclude, but de-prioritize (we'll handle in sorting)
+    return !hasHighCarbs;
+  }
+  if (pref === 'high-protein') {
+    // Prefer recipes with protein ingredients
+    const proteinIngredients = ['chicken','beef','pork','salmon','tuna','shrimp','egg','tofu','lentils','chickpea','scallops','duck','protein powder'];
+    const hasProtein = recipe.ingredients.some(ing => 
+      proteinIngredients.some(p => normalizeIngredient(ing).includes(p) || normalizeIngredient(p).includes(normalizeIngredient(ing)))
+    );
+    return hasProtein;
+  }
+  
+  return true;
+}
 
 function normalizeIngredient(text) {
   // strip counts/units and punctuation, collapse whitespace
@@ -819,7 +1322,12 @@ function renderRecipes() {
     const match = computeRecipeMatch(r);
     return { ...r, match };
   }).filter(r => {
-    // diet filter
+    // Apply settings-based filters first
+    if (!recipeMatchesDiet(r)) return false;
+    if (!recipeMatchesSkill(r)) return false;
+    if (!recipeMatchesFoodPreference(r)) return false;
+    
+    // diet filter from UI
     if (dietFilter !== 'all' && !(r.diet || []).includes(dietFilter)) return false;
     // search
     if (q) {
@@ -924,14 +1432,14 @@ if (saveSettingsBtn) saveSettingsBtn.addEventListener('click', () => filterRecip
 if (resetSettingsBtn) resetSettingsBtn.addEventListener('click', () => filterRecipesByAllergies());
 
 /* ---------- Confirm-missing modal wiring ---------- */
-const confirmModal = document.getElementById('confirmMissingModal');
+const confirmMissingModal = document.getElementById('confirmMissingModal');
 const missingListEl = document.getElementById('missingList');
 const confirmAddMissingBtn = document.getElementById('confirmAddMissing');
 const cancelConfirmMissingBtn = document.getElementById('cancelConfirmMissing');
 const closeConfirmMissingBtn = document.getElementById('closeConfirmMissing');
 
 function showConfirmMissingModal(missing) {
-  if (!confirmModal || !missingListEl) return;
+  if (!confirmMissingModal || !missingListEl) return;
   missingListEl.innerHTML = '';
   // build a checkbox list
   for (const m of missing) {
@@ -942,10 +1450,10 @@ function showConfirmMissingModal(missing) {
     lab.appendChild(chk); lab.appendChild(span);
     missingListEl.appendChild(lab);
   }
-  confirmModal.classList.add('show'); confirmModal.setAttribute('aria-hidden','false');
+  confirmMissingModal.classList.add('show'); confirmMissingModal.setAttribute('aria-hidden','false');
 }
 
-function hideConfirmMissingModal() { if (!confirmModal) return; confirmModal.classList.remove('show'); confirmModal.setAttribute('aria-hidden','true'); }
+function hideConfirmMissingModal() { if (!confirmMissingModal) return; confirmMissingModal.classList.remove('show'); confirmMissingModal.setAttribute('aria-hidden','true'); }
 
 function confirmAddMissingHandler() {
   if (!missingListEl) return;
@@ -965,7 +1473,7 @@ function confirmAddMissingHandler() {
     }
     // add as recipe-sourced item, store in Title Case for consistency
     const name = toTitleCase(rawName);
-    shopping.push({ id: cid(), name, category: 'other', bought: false, autoAdded: false, reason: 'recipe' });
+    shopping.push({ id: cid(), name, qty: 1, category: 'other', bought: false, autoAdded: false, reason: 'recipe' });
     added = true;
   }
   if (added) { persistShop(); renderShopping(); }
@@ -983,4 +1491,4 @@ function confirmAddMissingHandler() {
 if (cancelConfirmMissingBtn) cancelConfirmMissingBtn.onclick = hideConfirmMissingModal;
 if (closeConfirmMissingBtn) closeConfirmMissingBtn.onclick = hideConfirmMissingModal;
 if (confirmAddMissingBtn) confirmAddMissingBtn.onclick = confirmAddMissingHandler;
-if (confirmModal) confirmModal.addEventListener('click', (e) => { if (e.target === confirmModal) hideConfirmMissingModal(); });
+if (confirmMissingModal) confirmMissingModal.addEventListener('click', (e) => { if (e.target === confirmMissingModal) hideConfirmMissingModal(); });
