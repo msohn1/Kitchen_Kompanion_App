@@ -841,9 +841,28 @@ td.category {
   margin: 0;
   font-size: 18px;
 }
+
+/* In collapsed view: show short title, hide full title */
+.card-header h3 .title-short {
+  display: inline;
+}
+.card-header h3 .title-full {
+  display: none;
+}
+
+/* In expanded view: hide short title, show full title */
+.recipe-card.expanded .card-header h3 .title-short {
+  display: none;
+}
+.recipe-card.expanded .card-header h3 .title-full {
+  display: inline;
+}
 .card-header .meta {
   color: var(--muted);
   font-size: 14px;
+  text-align: right;
+  white-space: nowrap;
+  margin-left: auto; /* push to right edge */
 }
 
 .card-content {

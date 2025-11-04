@@ -139,58 +139,6 @@ inventory = inventory.map((it) => {
   return { ...it, category: finalCat };
 });
 
-// Seed a few items the first time.
-if (inventory.length === 0) {
-  inventory = [
-    {
-      id: cid(),
-      name: "Milk",
-      qty: 0.5,
-      unit: "gal",
-      minQty: 0.5,
-      expiry: addDaysISO(3),
-      category: "dairy",
-    },
-    {
-      id: cid(),
-      name: "Eggs",
-      qty: 6,
-      unit: "pcs",
-      minQty: 6,
-      expiry: addDaysISO(7),
-      category: "dairy",
-    },
-    {
-      id: cid(),
-      name: "Spinach",
-      qty: 0.2,
-      unit: "lb",
-      minQty: 0.3,
-      expiry: addDaysISO(2),
-      category: "veggies",
-    },
-    {
-      id: cid(),
-      name: "Greek Yogurt",
-      qty: 1,
-      unit: "ct",
-      minQty: 1,
-      expiry: addDaysISO(10),
-      category: "dairy",
-    },
-    {
-      id: cid(),
-      name: "Bacon",
-      qty: 0.2,
-      unit: "lb",
-      minQty: 0.3,
-      expiry: addDaysISO(5),
-      category: "protein",
-    },
-  ];
-  persist();
-}
-
 /* ---------- Inventory UI State ---------- */
 let currentFilter = "all"; // all | low | expiring
 let currentSearch = "";
@@ -2197,6 +2145,297 @@ const recipes = [
       "Season to taste and serve.",
     ],
   },
+  // More Beginner Recipes
+  {
+    id: "r31",
+    title: "Smoothie Bowl",
+    time: 10,
+    difficulty: "beginner",
+    diet: ["vegan", "vegetarian"],
+    ingredients: ["banana", "berries", "almond milk", "granola", "honey", "chia seeds"],
+    steps: [
+      "Blend frozen banana, berries, and almond milk until smooth.",
+      "Pour into a bowl.",
+      "Top with granola, fresh fruit, and chia seeds.",
+      "Drizzle with honey if desired.",
+    ],
+  },
+  {
+    id: "r32",
+    title: "Tuna Salad Sandwich",
+    time: 10,
+    difficulty: "beginner",
+    diet: ["pescatarian"],
+    ingredients: ["canned tuna", "bread", "mayonnaise", "celery", "lettuce", "tomato"],
+    steps: [
+      "Mix tuna with mayonnaise and diced celery.",
+      "Toast bread if desired.",
+      "Assemble sandwich with tuna mixture, lettuce, and tomato.",
+    ],
+  },
+  {
+    id: "r33",
+    title: "Hummus and Veggie Wrap",
+    time: 8,
+    difficulty: "beginner",
+    diet: ["vegan", "vegetarian"],
+    ingredients: ["tortilla", "hummus", "cucumber", "tomato", "lettuce", "carrot", "bell pepper"],
+    steps: [
+      "Spread hummus on tortilla.",
+      "Add sliced vegetables.",
+      "Roll up tightly and slice in half.",
+    ],
+  },
+  {
+    id: "r34",
+    title: "Oatmeal with Berries",
+    time: 10,
+    difficulty: "beginner",
+    diet: ["vegan", "vegetarian"],
+    ingredients: ["oats", "almond milk", "berries", "honey", "cinnamon", "banana"],
+    steps: [
+      "Cook oats in almond milk according to package directions.",
+      "Top with fresh berries, sliced banana, and cinnamon.",
+      "Drizzle with honey to taste.",
+    ],
+  },
+  {
+    id: "r35",
+    title: "Egg Salad",
+    time: 15,
+    difficulty: "beginner",
+    diet: ["vegetarian"],
+    ingredients: ["eggs", "mayonnaise", "mustard", "celery", "salt", "pepper", "paprika"],
+    steps: [
+      "Hard boil eggs and let cool.",
+      "Peel and chop eggs.",
+      "Mix with mayonnaise, mustard, diced celery, salt, and pepper.",
+      "Sprinkle with paprika and serve on bread or lettuce.",
+    ],
+  },
+  // More Novice Recipes
+  {
+    id: "r36",
+    title: "Greek Salad with Chicken",
+    time: 20,
+    difficulty: "novice",
+    diet: [],
+    ingredients: ["chicken breast", "cucumber", "tomato", "feta", "olive", "red onion", "olive oil", "lemon"],
+    steps: [
+      "Grill or pan-fry seasoned chicken breast.",
+      "Chop cucumber, tomato, onion, and olives.",
+      "Toss vegetables with feta, olive oil, and lemon juice.",
+      "Slice chicken and serve over salad.",
+    ],
+  },
+  {
+    id: "r37",
+    title: "Fish Tacos",
+    time: 25,
+    difficulty: "novice",
+    diet: ["pescatarian"],
+    ingredients: ["white fish", "tortilla", "cabbage", "lime", "sour cream", "cilantro", "avocado"],
+    steps: [
+      "Season and pan-fry or bake fish until flaky.",
+      "Shred cabbage and mix with lime juice.",
+      "Warm tortillas.",
+      "Assemble tacos with fish, cabbage slaw, avocado, and sour cream.",
+    ],
+  },
+  {
+    id: "r38",
+    title: "Margherita Pizza",
+    time: 20,
+    difficulty: "novice",
+    diet: ["vegetarian"],
+    ingredients: ["pizza dough", "tomato sauce", "mozzarella", "basil", "olive oil", "garlic"],
+    steps: [
+      "Roll out pizza dough.",
+      "Spread tomato sauce and minced garlic.",
+      "Add mozzarella slices.",
+      "Bake at 450°F for 12-15 minutes.",
+      "Top with fresh basil and olive oil.",
+    ],
+  },
+  {
+    id: "r39",
+    title: "Pad Thai",
+    time: 30,
+    difficulty: "novice",
+    diet: [],
+    ingredients: ["rice noodles", "shrimp", "egg", "peanuts", "bean sprouts", "lime", "fish sauce", "garlic", "green onion"],
+    steps: [
+      "Soak rice noodles until soft.",
+      "Scramble egg and set aside.",
+      "Stir-fry shrimp and garlic.",
+      "Add noodles, fish sauce, and egg.",
+      "Toss with bean sprouts and peanuts, garnish with lime.",
+    ],
+  },
+  {
+    id: "r40",
+    title: "Black Bean Burrito",
+    time: 15,
+    difficulty: "novice",
+    diet: ["vegan", "vegetarian"],
+    ingredients: ["tortilla", "black beans", "rice", "salsa", "avocado", "lettuce", "corn"],
+    steps: [
+      "Heat black beans and rice.",
+      "Warm tortilla.",
+      "Fill with beans, rice, corn, and salsa.",
+      "Top with avocado and lettuce, roll up.",
+    ],
+  },
+  // More Intermediate Recipes
+  {
+    id: "r41",
+    title: "Thai Green Curry",
+    time: 40,
+    difficulty: "intermediate",
+    diet: [],
+    ingredients: ["chicken", "green curry paste", "coconut milk", "bamboo shoots", "eggplant", "basil", "fish sauce", "rice"],
+    steps: [
+      "Sauté curry paste in oil.",
+      "Add chicken and cook until sealed.",
+      "Pour in coconut milk and simmer.",
+      "Add vegetables and cook until tender.",
+      "Finish with fish sauce and basil, serve over rice.",
+    ],
+  },
+  {
+    id: "r42",
+    title: "Eggplant Parmesan",
+    time: 60,
+    difficulty: "intermediate",
+    diet: ["vegetarian"],
+    ingredients: ["eggplant", "flour", "egg", "breadcrumbs", "tomato sauce", "mozzarella", "parmesan", "basil"],
+    steps: [
+      "Slice eggplant and salt to remove moisture.",
+      "Bread eggplant slices with flour, egg, and breadcrumbs.",
+      "Fry until golden.",
+      "Layer in baking dish with tomato sauce and cheese.",
+      "Bake at 375°F for 30 minutes until bubbly.",
+    ],
+  },
+  {
+    id: "r43",
+    title: "Honey Garlic Salmon",
+    time: 25,
+    difficulty: "intermediate",
+    diet: ["pescatarian"],
+    ingredients: ["salmon", "honey", "garlic", "soy sauce", "lemon", "butter", "asparagus"],
+    steps: [
+      "Mix honey, garlic, soy sauce, and lemon juice.",
+      "Marinate salmon for 15 minutes.",
+      "Pan-sear salmon in butter, basting with marinade.",
+      "Serve with roasted asparagus.",
+    ],
+  },
+  {
+    id: "r44",
+    title: "Stuffed Bell Peppers",
+    time: 50,
+    difficulty: "intermediate",
+    diet: [],
+    ingredients: ["bell pepper", "ground beef", "rice", "onion", "tomato sauce", "cheddar", "garlic"],
+    steps: [
+      "Cut tops off peppers and remove seeds.",
+      "Cook ground beef with onion and garlic.",
+      "Mix beef with cooked rice and tomato sauce.",
+      "Stuff peppers and top with cheese.",
+      "Bake at 375°F for 35 minutes.",
+    ],
+  },
+  {
+    id: "r45",
+    title: "Falafel Bowl",
+    time: 45,
+    difficulty: "intermediate",
+    diet: ["vegan", "vegetarian"],
+    ingredients: ["chickpea", "onion", "garlic", "parsley", "cumin", "tahini", "lemon", "cucumber", "tomato", "lettuce"],
+    steps: [
+      "Blend chickpeas, onion, garlic, parsley, and cumin.",
+      "Form into balls and fry until crispy.",
+      "Make tahini sauce with tahini, lemon, and garlic.",
+      "Assemble bowl with greens, falafel, vegetables, and tahini sauce.",
+    ],
+  },
+  // More Expert Recipes
+  {
+    id: "r46",
+    title: "Lobster Thermidor",
+    time: 90,
+    difficulty: "expert",
+    diet: ["pescatarian"],
+    ingredients: ["lobster", "butter", "shallot", "white wine", "cream", "mustard", "parmesan", "egg yolk", "tarragon"],
+    steps: [
+      "Boil lobster and extract meat, reserve shells.",
+      "Make sauce with butter, shallots, wine, cream, and mustard.",
+      "Temper egg yolk into sauce.",
+      "Mix lobster meat with sauce, fill shells.",
+      "Top with parmesan and broil until golden.",
+    ],
+  },
+  {
+    id: "r47",
+    title: "Osso Buco",
+    time: 150,
+    difficulty: "expert",
+    diet: [],
+    ingredients: ["veal shank", "flour", "carrot", "celery", "onion", "white wine", "tomato", "beef broth", "lemon", "parsley", "garlic"],
+    steps: [
+      "Dredge veal shanks in flour and brown on all sides.",
+      "Sauté vegetables in same pan.",
+      "Add wine, tomatoes, and broth.",
+      "Return meat, cover and braise for 2 hours until tender.",
+      "Make gremolata with lemon zest, parsley, and garlic to serve.",
+    ],
+  },
+  {
+    id: "r48",
+    title: "Homemade Ramen",
+    time: 180,
+    difficulty: "expert",
+    diet: [],
+    ingredients: ["pork belly", "ramen noodles", "soy sauce", "miso", "ginger", "garlic", "green onion", "egg", "seaweed", "chicken broth"],
+    steps: [
+      "Make rich broth by simmering pork bones for 3+ hours.",
+      "Marinate and slow-cook pork belly.",
+      "Prepare soft-boiled eggs.",
+      "Cook ramen noodles according to package.",
+      "Assemble bowls with broth, noodles, pork, egg, and toppings.",
+    ],
+  },
+  {
+    id: "r49",
+    title: "Soufflé",
+    time: 60,
+    difficulty: "expert",
+    diet: ["vegetarian"],
+    ingredients: ["egg", "butter", "flour", "milk", "cheese", "cream of tartar", "salt", "pepper"],
+    steps: [
+      "Make thick béchamel with butter, flour, and milk.",
+      "Stir in cheese and egg yolks.",
+      "Beat egg whites with cream of tartar until stiff peaks.",
+      "Fold egg whites gently into cheese mixture.",
+      "Bake at 375°F for 30-35 minutes without opening oven.",
+    ],
+  },
+  {
+    id: "r50",
+    title: "Paella",
+    time: 90,
+    difficulty: "expert",
+    diet: ["pescatarian"],
+    ingredients: ["rice", "shrimp", "mussels", "squid", "saffron", "tomato", "bell pepper", "peas", "chicken broth", "garlic", "paprika"],
+    steps: [
+      "Heat broth with saffron.",
+      "Sauté garlic, peppers, and tomatoes in large pan.",
+      "Add rice and paprika, toast briefly.",
+      "Pour in saffron broth, don't stir.",
+      "Add seafood and peas, cook until rice is done and forms socarrat crust.",
+    ],
+  },
 ];
 
 // Helper to check if recipe matches dietary restrictions
@@ -2466,17 +2705,21 @@ function renderRecipes() {
     left.style.alignItems = "center";
     left.style.gap = "8px";
     const h3 = document.createElement("h3");
-    h3.textContent = r.title;
+    // Create short title (remove "with ..." portion) for collapsed view
+    const shortTitle = r.title.includes(" with ") 
+      ? r.title.split(" with ")[0] 
+      : r.title;
+    h3.innerHTML = `<span class="title-short">${shortTitle}</span><span class="title-full">${r.title}</span>`;
     left.appendChild(h3);
-    // diet badges
+    // diet badges (skip "vegetarian" if "vegan" is present)
     if (Array.isArray(r.diet)) {
+      const isVegan = r.diet.some((d) => String(d).toLowerCase() === "vegan");
       for (const d of r.diet) {
+        const dLower = String(d).toLowerCase();
+        // Skip vegetarian badge when vegan badge is shown
+        if (dLower === "vegetarian" && isVegan) continue;
         const db = document.createElement("span");
-        db.className =
-          "diet-badge diet-" +
-          String(d)
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, "-");
+        db.className = "diet-badge diet-" + dLower.replace(/[^a-z0-9]+/g, "-");
         db.textContent = d.charAt(0).toUpperCase() + d.slice(1);
         left.appendChild(db);
       }
