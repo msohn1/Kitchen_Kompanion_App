@@ -72,39 +72,23 @@
   color: var(--tab);
 }
 
-/* Icon masking approach so icons follow currentColor (and thus var(--accent) when active) */
+/* Tab icon styling for img elements */
 .tab-icon {
   width: 28px;
   height: 28px;
   display: block;
   margin: 0 auto;
-  background-color: currentColor; /* inherits from .tablink color */
-  /* mask settings */
-  -webkit-mask-position: center;
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-size: contain;
-  mask-position: center;
-  mask-repeat: no-repeat;
-  mask-size: contain;
+  /* Apply color filter to make icons follow currentColor (active state) */
+  filter: brightness(0) saturate(100%) invert(1);
+  opacity: 0.7;
 }
 
-/* Per-tab icon masks */
-.icon-inventory {
-  -webkit-mask-image: url("icons/fridge.png");
-  mask-image: url("icons/fridge.png");
+.tablink.active .tab-icon {
+  opacity: 1;
+  /* Bright yellow #fbff00 for active icons */
+  filter: brightness(0) saturate(100%) invert(98%) sepia(100%) saturate(7482%) hue-rotate(1deg) brightness(104%);
 }
-.icon-shopping {
-  -webkit-mask-image: url("icons/price-list.png");
-  mask-image: url("icons/price-list.png");
-}
-.icon-recipes {
-  -webkit-mask-image: url("icons/cookbook.png");
-  mask-image: url("icons/cookbook.png");
-}
-.icon-setting {
-  -webkit-mask-image: url("icons/cogwheel.png");
-  mask-image: url("icons/cogwheel.png");
-}
+
 
 .color-box {
   width: 80%;
