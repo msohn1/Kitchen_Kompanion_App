@@ -183,6 +183,13 @@
   border-radius: 14px;
   overflow: hidden;
 }
+/* Do not wrap recipes list in a box */
+#recipes .inv-wrap {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  overflow: visible;
+}
 .inv-table {
   width: 100%;
   border-collapse: collapse;
@@ -276,6 +283,11 @@
 .name-line {
   font-weight: 600;
   margin-bottom: 6px;
+}
+.name-line.clickable {
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
 }
 .badge-line {
   display: flex;
@@ -808,14 +820,13 @@ td.category {
   border-radius: 6px;
 }
 
-/* Recipe cards: style to match other app cards */
+/* Recipe entries: individual cards with spacing between */
 .recipe-card {
   border: 1px solid #e5e7eb;
   border-radius: 12px;
-  margin: 12px 0; /* slightly reduced spacing */
+  margin: 14px 0; /* spacing between recipe cards */
   padding: 12px;
   background-color: #fff;
-  transition: all 0.12s ease;
   box-shadow: 0 6px 18px rgba(2, 6, 23, 0.04);
 }
 
@@ -958,7 +969,7 @@ td.category {
   border-color: transparent;
 }
 .recipe-toolbar #recipeSearch {
-  flex: 0 1 180px;
+  flex: 0 1 225px;
   min-width: 140px;
   max-width: 240px;
   padding: 10px 12px;
@@ -1005,5 +1016,10 @@ td.category {
 
 /* Make the recipes list area clearer */
 #recipesList {
-  padding: 6px 0;
+  padding: 0; /* no extra top padding before first card */
+}
+
+/* Align space between toolbar and first recipe card with inventory/shopping */
+#recipes .inv-wrap > #recipesList > .recipe-card:first-child {
+  margin-top: 0 !important; /* ensure toolbar↔first card gap matches other tabs */
 }

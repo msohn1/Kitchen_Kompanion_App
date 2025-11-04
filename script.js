@@ -279,8 +279,17 @@ function renderInventory() {
     // Name + badges (stacked): primary badges on first line, category on its own line below
     const tdName = document.createElement("td");
     const nameLine = document.createElement("div");
-    nameLine.className = "name-line";
+    nameLine.className = "name-line clickable";
     nameLine.textContent = it.name;
+    const openFullEdit = () => showEditItemModal(it.id);
+    nameLine.tabIndex = 0;
+    nameLine.addEventListener("click", openFullEdit);
+    nameLine.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        openFullEdit();
+      }
+    });
 
     const badgeLine = document.createElement("div");
     badgeLine.className = "badge-line";
@@ -347,6 +356,118 @@ function renderInventory() {
   // update button highlight states
   updateInventoryFilterButtons();
 }
+
+/* ---------- Edit full inventory item modal ---------- */
+const editItemModal = document.getElementById("editItemModal");
+const closeEditItemModalBtn = document.getElementById("closeEditItemModal");
+const editItemForm = document.getElementById("editItemForm");
+const cancelEditItemBtn = document.getElementById("cancelEditItem");
+// inputs
+const editItemIdInput = document.getElementById("editItemId");
+const editItemNameInput = document.getElementById("editItemName");
+const editItemQtyInput = document.getElementById("editItemQty");
+const editItemUnitInput = document.getElementById("editItemUnit");
+const editItemMinQtyInput = document.getElementById("editItemMinQty");
+const editItemExpiryInput = document.getElementById("editItemExpiry");
+const editItemCategorySelect = document.getElementById("editItemCategory");
+
+function showEditItemModal(id) {
+  if (!editItemModal) return;
+  const it = inventory.find((x) => x.id === id);
+  if (!it) return;
+  editItemIdInput.value = it.id;
+  editItemNameInput.value = it.name || "";
+  editItemQtyInput.value = String(Number(it.qty) || 0);
+  editItemUnitInput.value = it.unit || "";
+  editItemMinQtyInput.value = String(Number(it.minQty) || 0);
+  editItemExpiryInput.value = it.expiry && /^\d{4}-\d{2}-\d{2}$/.test(String(it.expiry)) ? it.expiry : "";
+  editItemCategorySelect.value = String(it.category || "other").toLowerCase();
+  editItemModal.classList.add("show");
+  editItemModal.setAttribute("aria-hidden", "false");
+  setTimeout(() => editItemNameInput?.focus(), 0);
+}
+
+function hideEditItemModal() {
+  if (!editItemModal) return;
+  editItemModal.classList.remove("show");
+  editItemModal.setAttribute("aria-hidden", "true");
+}
+
+if (closeEditItemModalBtn) closeEditItemModalBtn.onclick = hideEditItemModal;
+if (cancelEditItemBtn) cancelEditItemBtn.onclick = hideEditItemModal;
+if (editItemModal)
+  editItemModal.addEventListener("click", (e) => {
+    if (e.target === editItemModal) hideEditItemModal();
+  });
+
+if (editItemForm)
+  editItemForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = editItemIdInput.value;
+    const it = inventory.find((x) => x.id === id);
+    if (!it) {
+      hideEditItemModal();
+      return;
+    }
+    const nextName = String(editItemNameInput.value || "").trim();
+    const qtyVal = Number(editItemQtyInput.value);
+    const minQtyVal = Number(editItemMinQtyInput.value);
+    const unitVal = String(editItemUnitInput.value || "");
+    const expiryVal = String(editItemExpiryInput.value || "");
+    const catVal = String(editItemCategorySelect.value || "other").toLowerCase();
+
+    if (!nextName) {
+      await confirmDialog("Name is required.", { title: "Edit item", okText: "OK" });
+      return;
+    }
+    if (!Number.isFinite(qtyVal) || qtyVal < 0) {
+      await confirmDialog("Quantity must be a non-negative number.", { title: "Edit item", okText: "OK" });
+      return;
+    }
+    if (!Number.isFinite(minQtyVal) || minQtyVal < 0) {
+      await confirmDialog("Min qty must be a non-negative number.", { title: "Edit item", okText: "OK" });
+      return;
+    }
+    // Prevent duplicate names (case-insensitive) except for this same item
+    const dup = inventory.some(
+      (x) => x.id !== id && String(x.name || "").trim().toLowerCase() === nextName.toLowerCase()
+    );
+    if (dup) {
+      await confirmDialog(`"${nextName}" is already in your Inventory. Choose a different name.`, {
+        title: "Duplicate item",
+        okText: "OK",
+      });
+      return;
+    }
+    // If qty <= 0, confirm deletion instead of saving
+    if (qtyVal <= 0) {
+      hideEditItemModal();
+      const ok = await confirmDialog(
+        `Set quantity to ${qtyVal}. Delete "${it.name}" from inventory?`,
+        { title: "Delete item", okText: "Confirm" }
+      );
+      if (!ok) {
+        // reopen for correction
+        showEditItemModal(id);
+        return;
+      }
+      inventory = inventory.filter((x) => x.id !== id);
+      persist();
+      renderInventory();
+      return;
+    }
+
+    // Apply updates
+    it.name = nextName;
+    it.qty = qtyVal;
+    it.unit = unitVal;
+    it.minQty = minQtyVal;
+    it.expiry = expiryVal;
+    it.category = catVal || "other";
+    persist();
+    renderInventory();
+    hideEditItemModal();
+  });
 
 // Ensure items that are low or expiring exist in the shopping list (no duplicates)
 function syncLowExpiringToShopping() {
@@ -2436,8 +2557,10 @@ function renderRecipes() {
 // wire recipe controls
 const recipeSearch = document.getElementById("recipeSearch");
 const recipeDietFilter = document.getElementById("recipeDietFilter");
+const recipeSortSelect = document.getElementById("recipeSort");
 if (recipeSearch) recipeSearch.addEventListener("input", () => renderRecipes());
 if (recipeDietFilter) recipeDietFilter.addEventListener("change", () => renderRecipes());
+if (recipeSortSelect) recipeSortSelect.addEventListener("change", () => renderRecipes());
 
 // render initially
 renderRecipes();

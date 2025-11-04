@@ -95,6 +95,7 @@
             <option value="all">All diets</option>
             <option value="vegetarian">Vegetarian</option>
             <option value="vegan">Vegan</option>
+            <option value="pescatarian">Pescatarian</option>
           </select>
         </div>
         <div class="inv-wrap">
@@ -333,6 +334,55 @@
           <div class="modal-actions">
             <button type="button" class="btn" id="cancelEditCell">Cancel</button>
             <button type="submit" class="btn accent" id="saveEditCell">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Edit Inventory Item Modal (full details) -->
+    <div class="modal" id="editItemModal" aria-hidden="true">
+      <div class="modal-card">
+        <div class="modal-head">
+          <h3>Edit Inventory Item</h3>
+          <button class="icon-btn" id="closeEditItemModal" aria-label="Close">×</button>
+        </div>
+        <form id="editItemForm" class="grid">
+          <input type="hidden" id="editItemId" />
+          <label>
+            <span>Name</span>
+            <input required id="editItemName" name="name" type="text" placeholder="e.g., Milk" />
+          </label>
+          <label>
+            <span>Quantity</span>
+            <input required id="editItemQty" name="qty" type="number" min="0" step="0.01" />
+          </label>
+          <label>
+            <span>Unit</span>
+            <input id="editItemUnit" name="unit" type="text" placeholder="e.g., L, pcs" />
+          </label>
+          <label>
+            <span>Min qty</span>
+            <input required id="editItemMinQty" name="minQty" type="number" min="0" step="0.01" />
+          </label>
+          <label>
+            <span>Expiry</span>
+            <input id="editItemExpiry" name="expiry" type="date" />
+          </label>
+          <label>
+            <span>Category</span>
+            <select id="editItemCategory" name="category">
+              <option value="dairy">Dairy</option>
+              <option value="carb">Carb</option>
+              <option value="veggies">Veggies</option>
+              <option value="protein">Protein</option>
+              <option value="condiment">Condiment</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+
+          <div class="modal-actions">
+            <button type="button" class="btn" id="cancelEditItem">Cancel</button>
+            <button type="submit" class="btn accent">Save</button>
           </div>
         </form>
       </div>
