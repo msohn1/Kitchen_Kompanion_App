@@ -1,16 +1,15 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tabbed App</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
 
-<body>
-<div class = "app">
-    <div id="shopping" class="tabcontent">
+  <body>
+    <div class="app">
+      <div id="shopping" class="tabcontent">
         <!-- <h2>Shopping List</h2> -->
         <div class="shop-toolbar inv-toolbar">
           <select id="shopFilterCategory">
@@ -22,9 +21,9 @@
             <option value="condiment">Condiment</option>
             <option value="other">Other</option>
           </select>
-          
+
           <input id="shopSearch" type="search" placeholder="Search..." />
-           <button class="btn" id="transferBought">Transfer Items</button>
+          <button class="btn" id="transferBought">Transfer Items</button>
           <button class="btn accent" id="openAddShopModal">+ Add Item</button>
         </div>
 
@@ -32,110 +31,110 @@
           <table class="inv-table" id="shopTable">
             <thead>
               <tr>
-                  <th class="chk-col"></th>
-                  <th>Item</th>
-                  <th class="num">Qty</th>
-                  <th>Category</th>
-                  <th>Source</th>
-                  <th></th>
-                </tr>
+                <th class="chk-col"></th>
+                <th>Item</th>
+                <th class="num">Qty</th>
+                <th>Category</th>
+                <th>Source</th>
+                <th></th>
+              </tr>
             </thead>
             <tbody id="shopBody"></tbody>
           </table>
           <p id="shopEmpty" class="muted hidden">No items in shopping list.</p>
         </div>
-    </div>
+      </div>
 
-    <div id="inventory" class="tabcontent">
+      <div id="inventory" class="tabcontent">
         <!-- <h2>Inventory</h2> -->
         <div class="inv-toolbar">
-        <button class="btn" id="filterAll">All</button>
-        <button class="btn" id="filterLow">Low</button>
-        <button class="btn" id="filterExpiring">Expiring</button>
-        <select id="filterCategory">
-          <option value="all">All categories</option>
-          <option value="dairy">Dairy</option>
-          <option value="carb">Carb</option>
-          <option value="veggies">Veggies</option>
-          <option value="protein">Protein</option>
-          <option value="condiment">Condiment</option>
-          <option value="other">Other</option>
-        </select>
-        <input id="invSearch" type="search" placeholder="Search..." />
-        <button class="btn accent" id="openAddModal">+ Add Item</button>
-    </div>
+          <button class="btn" id="filterAll">All</button>
+          <button class="btn" id="filterLow">Low</button>
+          <button class="btn" id="filterExpiring">Expiring</button>
+          <select id="filterCategory">
+            <option value="all">All categories</option>
+            <option value="dairy">Dairy</option>
+            <option value="carb">Carb</option>
+            <option value="veggies">Veggies</option>
+            <option value="protein">Protein</option>
+            <option value="condiment">Condiment</option>
+            <option value="other">Other</option>
+          </select>
+          <input id="invSearch" type="search" placeholder="Search..." />
+          <button class="btn accent" id="openAddModal">+ Add Item</button>
+        </div>
 
-<div class="inv-wrap">
-  <table class="inv-table" id="invTable">
-    <thead>
-      <tr>
-        <th>Item</th>
-        <th class="num">Qty</th>
-        <th>Unit</th>
-        <th>Category</th>
-        <th>Expiry</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody id="invBody"></tbody>
-  </table>
-  <p id="invEmpty" class="muted hidden">No items to show.</p>
-</div>
-    </div>
-
-<div id="recipes" class="tabcontent">
-      <!-- <h2>Suggested Recipes</h2> -->
-      <div class="inv-toolbar recipe-toolbar">
-        <input id="recipeSearch" type="search" placeholder="Search recipes, ingredients…" />
-        <select id="recipeSort">
-          <option value="recommended">Recommended</option>
-          <option value="missing">Most ingredients match</option>
-          <option value="time">Shortest time</option>
-        </select>
-        <select id="recipeDietFilter">
-          <option value="all">All diets</option>
-          <option value="vegetarian">Vegetarian</option>
-          <option value="vegan">Vegan</option>
-        </select>
+        <div class="inv-wrap">
+          <table class="inv-table" id="invTable">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th class="num">Qty</th>
+                <th>Unit</th>
+                <th>Category</th>
+                <th>Expiry</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="invBody"></tbody>
+          </table>
+          <p id="invEmpty" class="muted hidden">No items to show.</p>
+        </div>
       </div>
-      <div class="inv-wrap">
-        <div id="recipesList"></div>
-      </div>
-    </div>
 
-    <div id="setting" class="tabcontent">
+      <div id="recipes" class="tabcontent">
+        <!-- <h2>Suggested Recipes</h2> -->
+        <div class="inv-toolbar recipe-toolbar">
+          <input id="recipeSearch" type="search" placeholder="Search recipes, ingredients…" />
+          <select id="recipeSort">
+            <option value="recommended">Recommended</option>
+            <option value="missing">Most ingredients match</option>
+            <option value="time">Shortest time</option>
+          </select>
+          <select id="recipeDietFilter">
+            <option value="all">All diets</option>
+            <option value="vegetarian">Vegetarian</option>
+            <option value="vegan">Vegan</option>
+          </select>
+        </div>
+        <div class="inv-wrap">
+          <div id="recipesList"></div>
+        </div>
+      </div>
+
+      <div id="setting" class="tabcontent">
         <!-- <h2>Settings</h2> -->
 
         <form id="settingsForm" class="grid settings-grid">
           <fieldset>
             <legend>Dietary restrictions</legend>
             <div class="checkbox-row">
-              <label><input type="checkbox" name="diet" value="vegetarian"> Vegetarian</label>
-              <label><input type="checkbox" name="diet" value="vegan"> Vegan</label>
-              <label><input type="checkbox" name="diet" value="pescatarian"> Pescatarian</label>
-              <label><input type="checkbox" name="diet" value="gluten-free"> Gluten-free</label>
-              <label><input type="checkbox" name="diet" value="dairy-free"> Dairy-free</label>
+              <label><input type="checkbox" name="diet" value="vegetarian" /> Vegetarian</label>
+              <label><input type="checkbox" name="diet" value="vegan" /> Vegan</label>
+              <label><input type="checkbox" name="diet" value="pescatarian" /> Pescatarian</label>
+              <label><input type="checkbox" name="diet" value="gluten-free" /> Gluten-free</label>
+              <label><input type="checkbox" name="diet" value="dairy-free" /> Dairy-free</label>
             </div>
           </fieldset>
 
           <fieldset>
             <legend>Allergies</legend>
             <div class="checkbox-row">
-              <label><input type="checkbox" name="allergy" value="peanuts"> Peanuts</label>
-              <label><input type="checkbox" name="allergy" value="tree-nuts"> Tree nuts</label>
-              <label><input type="checkbox" name="allergy" value="milk"> Milk</label>
-              <label><input type="checkbox" name="allergy" value="eggs"> Eggs</label>
-              <label><input type="checkbox" name="allergy" value="soy"> Soy</label>
-              <label><input type="checkbox" name="allergy" value="wheat"> Wheat</label>
-              <label><input type="checkbox" name="allergy" value="gluten"> Gluten</label>
-              <label><input type="checkbox" name="allergy" value="fish"> Fish</label>
-              <label><input type="checkbox" name="allergy" value="shellfish"> Shellfish</label>
-              <label><input type="checkbox" name="allergy" value="sesame"> Sesame</label>
-              <label><input type="checkbox" name="allergy" value="mustard"> Mustard</label>
-              <label><input type="checkbox" name="allergy" value="sulfites"> Sulfites</label>
-              <label><input type="checkbox" name="allergy" value="celery"> Celery</label>
-              <label><input type="checkbox" name="allergy" value="mollusks"> Mollusks</label>
-              <label><input type="checkbox" name="allergy" value="corn"> Corn</label>
+              <label><input type="checkbox" name="allergy" value="peanuts" /> Peanuts</label>
+              <label><input type="checkbox" name="allergy" value="tree-nuts" /> Tree nuts</label>
+              <label><input type="checkbox" name="allergy" value="milk" /> Milk</label>
+              <label><input type="checkbox" name="allergy" value="eggs" /> Eggs</label>
+              <label><input type="checkbox" name="allergy" value="soy" /> Soy</label>
+              <label><input type="checkbox" name="allergy" value="wheat" /> Wheat</label>
+              <label><input type="checkbox" name="allergy" value="gluten" /> Gluten</label>
+              <label><input type="checkbox" name="allergy" value="fish" /> Fish</label>
+              <label><input type="checkbox" name="allergy" value="shellfish" /> Shellfish</label>
+              <label><input type="checkbox" name="allergy" value="sesame" /> Sesame</label>
+              <label><input type="checkbox" name="allergy" value="mustard" /> Mustard</label>
+              <label><input type="checkbox" name="allergy" value="sulfites" /> Sulfites</label>
+              <label><input type="checkbox" name="allergy" value="celery" /> Celery</label>
+              <label><input type="checkbox" name="allergy" value="mollusks" /> Mollusks</label>
+              <label><input type="checkbox" name="allergy" value="corn" /> Corn</label>
             </div>
           </fieldset>
 
@@ -160,178 +159,185 @@
             </select>
           </label>
 
-          <div class="modal-actions" style="grid-column: 1 / -1;">
+          <div class="modal-actions" style="grid-column: 1 / -1">
             <button type="button" class="btn" id="resetSettings">Reset</button>
             <button type="button" class="btn accent" id="saveSettings">Save</button>
           </div>
         </form>
-
-    </div>
-
-    <!-- Add Item Modal -->
-<div class="modal" id="addModal" aria-hidden="true">
-  <div class="modal-card">
-    <div class="modal-head">
-      <h3>Add Inventory Item</h3>
-      <button class="icon-btn" id="closeAddModal" aria-label="Close">×</button>
-    </div>
-
-    <form id="addForm" class="grid">
-      <label>
-        <span>Name</span>
-        <input required name="name" type="text" placeholder="e.g., Milk" />
-      </label>
-      <label>
-        <span>Quantity</span>
-        <input required name="qty" type="number" min="0" step="0.01" />
-      </label>
-      <label>
-        <span>Unit</span>
-        <input name="unit" type="text" placeholder="e.g., L, pcs" />
-      </label>
-      <label>
-        <span>Min qty</span>
-        <input required name="minQty" type="number" min="0" step="0.01" />
-      </label>
-      <label>
-        <span>Expiry</span>
-        <input name="expiry" type="date" />
-      </label>
-      <label>
-        <span>Category</span>
-        <select id="addShopCategory" name="category">
-          <option value="dairy">Dairy</option>
-          <option value="carb">Carb</option>
-          <option value="veggies">Veggies</option>
-          <option value="protein">Protein</option>
-          <option value="condiment">Condiment</option>
-          <option value="other" selected>Other</option>
-        </select>
-      </label>
-
-      <div class="modal-actions">
-        <button type="button" class="btn" id="cancelAdd">Cancel</button>
-        <button type="submit" class="btn accent">Save</button>
       </div>
-    </form>
-  </div>
-</div>
 
-<!-- Confirm add missing ingredients modal -->
-<div class="modal" id="confirmMissingModal" aria-hidden="true">
-  <div class="modal-card">
-    <div class="modal-head">
-      <h3>Add missing ingredients</h3>
-      <button class="icon-btn" id="closeConfirmMissing" aria-label="Close">×</button>
-    </div>
-    <div class="modal-body">
-      <p>The following ingredients are missing. Review and confirm to add them to your Shopping list.</p>
-      <div id="missingList"></div>
-      <p id="confirmNotice" class="muted" style="display:none;margin-top:8px;"></p>
-    </div>
-    <div class="modal-actions">
-      <button type="button" class="btn" id="cancelConfirmMissing">Cancel</button>
-      <button type="button" class="btn accent" id="confirmAddMissing">Add to Shopping</button>
-    </div>
-  </div>
-</div>
+      <!-- Add Item Modal -->
+      <div class="modal" id="addModal" aria-hidden="true">
+        <div class="modal-card">
+          <div class="modal-head">
+            <h3>Add Inventory Item</h3>
+            <button class="icon-btn" id="closeAddModal" aria-label="Close">×</button>
+          </div>
 
+          <form id="addForm" class="grid">
+            <label>
+              <span>Name</span>
+              <input required name="name" type="text" placeholder="e.g., Milk" />
+            </label>
+            <label>
+              <span>Quantity</span>
+              <input required name="qty" type="number" min="0" step="0.01" />
+            </label>
+            <label>
+              <span>Unit</span>
+              <input name="unit" type="text" placeholder="e.g., L, pcs" />
+            </label>
+            <label>
+              <span>Min qty</span>
+              <input required name="minQty" type="number" min="0" step="0.01" />
+            </label>
+            <label>
+              <span>Expiry</span>
+              <input name="expiry" type="date" />
+            </label>
+            <label>
+              <span>Category</span>
+              <select id="addShopCategory" name="category">
+                <option value="dairy">Dairy</option>
+                <option value="carb">Carb</option>
+                <option value="veggies">Veggies</option>
+                <option value="protein">Protein</option>
+                <option value="condiment">Condiment</option>
+                <option value="other" selected>Other</option>
+              </select>
+            </label>
 
-  <div class="tabbar">
-    <button class="tablink" onclick="openTab('inventory')">
-      <span class="tab-icon icon-inventory" aria-hidden="true"></span>Inventory</button>
-
-    <button class="tablink" onclick="openTab('shopping')">
-      <span class="tab-icon icon-shopping" aria-hidden="true"></span>Shopping</button>
-
-
-    <button class="tablink" onclick="openTab('recipes')">
-      <span class="tab-icon icon-recipes" aria-hidden="true"></span>Recipes</button>
-
-    <button class="tablink" onclick="openTab('setting')">
-      <span class="tab-icon icon-setting" aria-hidden="true"></span>Setting</button>
-
-  </div>
-</div>
-
-
-<!-- Add Shopping Item Modal -->
-<div class="modal" id="addShopModal" aria-hidden="true">
-  <div class="modal-card">
-    <div class="modal-head">
-      <h3>Add Shopping Item</h3>
-      <button class="icon-btn" id="closeAddShopModal" aria-label="Close">×</button>
-    </div>
-    <form id="addShopForm" class="grid">
-      <label>
-        <span>Name</span>
-        <input required name="name" type="text" placeholder="e.g., Milk" />
-      </label>
-      <label>
-        <span>Quantity</span>
-        <input required name="qty" type="number" min="1" step="1" value="1" />
-      </label>
-      <label>
-        <span>Category</span>
-        <select name="category">
-          <option value="dairy">Dairy</option>
-          <option value="carb">Carb</option>
-          <option value="veggies">Veggies</option>
-          <option value="protein">Protein</option>
-          <option value="condiment">Condiment</option>
-          <option value="other" selected>Other</option>
-        </select>
-      </label>
-      <div class="modal-actions">
-        <button type="button" class="btn" id="cancelAddShop">Cancel</button>
-        <button type="submit" class="btn accent">Save</button>
+            <div class="modal-actions">
+              <button type="button" class="btn" id="cancelAdd">Cancel</button>
+              <button type="submit" class="btn accent">Save</button>
+            </div>
+          </form>
+        </div>
       </div>
-    </form>
-  </div>
-</div>
 
-<!-- Generic Confirm Modal -->
-<div class="modal" id="confirmModal" aria-hidden="true" role="dialog" aria-labelledby="confirmTitle">
-  <div class="modal-card">
-    <div class="modal-head">
-      <h3 id="confirmTitle">Confirm</h3>
-      <button class="icon-btn" id="closeConfirmModal" aria-label="Close">×</button>
-    </div>
-    <div class="modal-body">
-      <p id="confirmMessage">Are you sure?</p>
-    </div>
-    <div class="modal-actions">
-      <button type="button" class="btn" id="confirmCancel">Cancel</button>
-      <button type="button" class="btn accent" id="confirmOk">Confirm</button>
-    </div>
-  </div>
- </div>
-
-<!-- Edit Inventory Cell Modal -->
-<div class="modal" id="editCellModal" aria-hidden="true">
-  <div class="modal-card">
-    <div class="modal-head">
-      <h3 id="editCellTitle">Edit</h3>
-      <button class="icon-btn" id="closeEditCellModal" aria-label="Close">×</button>
-    </div>
-    <form id="editCellForm" class="grid" style="grid-template-columns: 1fr;">
-      <label id="editQtyLabel">
-        <span>Quantity</span>
-        <input id="editQtyInput" type="number" min="0" step="0.01" />
-      </label>
-      <label id="editExpiryLabel" style="display:none;">
-        <span>Expiry</span>
-        <input id="editExpiryInput" type="date" />
-      </label>
-      <div class="modal-actions">
-        <button type="button" class="btn" id="cancelEditCell">Cancel</button>
-        <button type="submit" class="btn accent" id="saveEditCell">Save</button>
+      <!-- Confirm add missing ingredients modal -->
+      <div class="modal" id="confirmMissingModal" aria-hidden="true">
+        <div class="modal-card">
+          <div class="modal-head">
+            <h3>Add missing ingredients</h3>
+            <button class="icon-btn" id="closeConfirmMissing" aria-label="Close">×</button>
+          </div>
+          <div class="modal-body">
+            <p>
+              The following ingredients are missing. Review and confirm to add them to your Shopping
+              list.
+            </p>
+            <div id="missingList"></div>
+            <p id="confirmNotice" class="muted" style="display: none; margin-top: 8px"></p>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn" id="cancelConfirmMissing">Cancel</button>
+            <button type="button" class="btn accent" id="confirmAddMissing">Add to Shopping</button>
+          </div>
+        </div>
       </div>
-    </form>
-  </div>
- </div>
+
+      <div class="tabbar">
+        <button class="tablink" onclick="openTab('inventory')">
+          <span class="tab-icon icon-inventory" aria-hidden="true"></span>Inventory
+        </button>
+
+        <button class="tablink" onclick="openTab('shopping')">
+          <span class="tab-icon icon-shopping" aria-hidden="true"></span>Shopping
+        </button>
+
+        <button class="tablink" onclick="openTab('recipes')">
+          <span class="tab-icon icon-recipes" aria-hidden="true"></span>Recipes
+        </button>
+
+        <button class="tablink" onclick="openTab('setting')">
+          <span class="tab-icon icon-setting" aria-hidden="true"></span>Setting
+        </button>
+      </div>
+    </div>
+
+    <!-- Add Shopping Item Modal -->
+    <div class="modal" id="addShopModal" aria-hidden="true">
+      <div class="modal-card">
+        <div class="modal-head">
+          <h3>Add Shopping Item</h3>
+          <button class="icon-btn" id="closeAddShopModal" aria-label="Close">×</button>
+        </div>
+        <form id="addShopForm" class="grid">
+          <label>
+            <span>Name</span>
+            <input required name="name" type="text" placeholder="e.g., Milk" />
+          </label>
+          <label>
+            <span>Quantity</span>
+            <input required name="qty" type="number" min="1" step="1" value="1" />
+          </label>
+          <label>
+            <span>Category</span>
+            <select name="category">
+              <option value="dairy">Dairy</option>
+              <option value="carb">Carb</option>
+              <option value="veggies">Veggies</option>
+              <option value="protein">Protein</option>
+              <option value="condiment">Condiment</option>
+              <option value="other" selected>Other</option>
+            </select>
+          </label>
+          <div class="modal-actions">
+            <button type="button" class="btn" id="cancelAddShop">Cancel</button>
+            <button type="submit" class="btn accent">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Generic Confirm Modal -->
+    <div
+      class="modal"
+      id="confirmModal"
+      aria-hidden="true"
+      role="dialog"
+      aria-labelledby="confirmTitle"
+    >
+      <div class="modal-card">
+        <div class="modal-head">
+          <h3 id="confirmTitle">Confirm</h3>
+          <button class="icon-btn" id="closeConfirmModal" aria-label="Close">×</button>
+        </div>
+        <div class="modal-body">
+          <p id="confirmMessage">Are you sure?</p>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn" id="confirmCancel">Cancel</button>
+          <button type="button" class="btn accent" id="confirmOk">Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Inventory Cell Modal -->
+    <div class="modal" id="editCellModal" aria-hidden="true">
+      <div class="modal-card">
+        <div class="modal-head">
+          <h3 id="editCellTitle">Edit</h3>
+          <button class="icon-btn" id="closeEditCellModal" aria-label="Close">×</button>
+        </div>
+        <form id="editCellForm" class="grid" style="grid-template-columns: 1fr">
+          <label id="editQtyLabel">
+            <span>Quantity</span>
+            <input id="editQtyInput" type="number" min="0" step="0.01" />
+          </label>
+          <label id="editExpiryLabel" style="display: none">
+            <span>Expiry</span>
+            <input id="editExpiryInput" type="date" />
+          </label>
+          <div class="modal-actions">
+            <button type="button" class="btn" id="cancelEditCell">Cancel</button>
+            <button type="submit" class="btn accent" id="saveEditCell">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
 
     <script src="script.js"></script>
-
-</body>
+  </body>
 </html>
