@@ -704,14 +704,44 @@ function hideEditCellModal() { if (!editCellModal) return; editCellModal.classLi
 if (closeEditCellModalBtn) closeEditCellModalBtn.onclick = hideEditCellModal;
 if (cancelEditCellBtn) cancelEditCellBtn.onclick = hideEditCellModal;
 if (editCellModal) editCellModal.addEventListener('click', (e) => { if (e.target === editCellModal) hideEditCellModal(); });
-if (editCellForm) editCellForm.addEventListener('submit', (e) => {
+if (editCellForm) editCellForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const source = currentEdit.source;
   const it = source === 'shopping' ? shopping.find(x => x.id === currentEdit.id) : inventory.find(x => x.id === currentEdit.id);
   if (!it) { hideEditCellModal(); return; }
   if (currentEdit.field === 'qty') {
     const v = Number(editQtyInput.value);
-    if (!Number.isFinite(v) || v < 0) { hideEditCellModal(); return; }
+    if (!Number.isFinite(v)) { return; }
+    // If new qty is <= 0, confirm deletion instead of saving 0
+    if (v <= 0) {
+      const state = { ...currentEdit };
+      const prevVal = String(editQtyInput.value);
+      // Close the edit modal first so the confirmation shows immediately
+      hideEditCellModal();
+  const msg = `Set quantity to ${v}. Delete \"${it.name}\" from ${source === 'shopping' ? 'shopping' : 'inventory'}?`;
+  const ok = await confirmDialog(msg, { title: 'Delete item', okText: 'Confirm' });
+      if (!ok) {
+        // Re-open the edit modal so the user can adjust the value
+        showEditCellModal(state.id, state.field, state.source);
+        if (state.field === 'qty') {
+          editQtyInput.value = prevVal;
+          setTimeout(() => editQtyInput?.focus(), 0);
+        }
+        return;
+      }
+      // Inline delete to avoid double-confirm
+      if (source === 'shopping') {
+        shopping = shopping.filter(x => x.id !== state.id);
+        persistShop();
+        renderShopping();
+      } else {
+        inventory = inventory.filter(x => x.id !== state.id);
+        persist();
+        renderInventory();
+      }
+      // edit modal is already hidden
+      return;
+    }
     it.qty = v;
   } else {
     // expiry can be blank
