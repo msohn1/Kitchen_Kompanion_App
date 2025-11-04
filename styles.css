@@ -12,6 +12,11 @@
   --black: #000000;
 }
 
+/* Utility class to hide elements */
+.hidden {
+  display: none !important;
+}
+
 .app {
   margin: auto;
   width: 640px;
