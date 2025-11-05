@@ -166,7 +166,10 @@ function formatDateShort(iso) {
   if (!iso) return "";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  const month = d.toLocaleDateString("en-US", { month: "short" });
+  const day = d.getDate();
+  const year = d.getFullYear().toString().slice(-2);
+  return `${month} ${day}, '${year}`;
 }
 
 /* ---------- Filtering ---------- */
@@ -287,8 +290,8 @@ function renderInventory() {
     minusBtn.classList.add("small");
     const plusBtn = makeRowBtn("+", () => adjustQty(it.id, +1));
     plusBtn.classList.add("small");
-    const delBtn = makeRowBtn("Delete", () => removeItem(it.id));
-    delBtn.classList.add("danger");
+    const delBtn = makeRowBtn("×", () => removeItem(it.id));
+    delBtn.classList.add("danger", "small");
 
     // layout: single horizontal row with minus, plus, Delete
     const actionsWrap = document.createElement("div");
@@ -751,8 +754,8 @@ function renderShopping() {
     plusBtn.onclick = () => adjustShopQty(it.id, +1);
 
     const del = document.createElement("button");
-    del.className = "btn row-btn danger";
-    del.textContent = "Delete";
+    del.className = "btn row-btn danger small";
+    del.textContent = "×";
     del.onclick = () => removeShopItem(it.id);
 
     actionsWrap.append(minusBtn, plusBtn, del);

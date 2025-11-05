@@ -442,10 +442,10 @@ td.category {
   width: 200px;
 }
 #shopTable .row-btn.small {
-  padding: 6px 10px;
-  font-size: 14px;
-  min-height: 36px;
-  min-width: 40px;
+  padding: 14px 18px;
+  font-size: 22px;
+  min-height: 56px;
+  min-width: 56px;
 }
 #shopTable thead th:nth-child(3) {
   text-align: left;
@@ -617,12 +617,12 @@ td.category {
 
 /* Small numeric +/- style */
 .row-btn.small {
-  padding: 6px 8px;
-  border-radius: 6px;
+  padding: 14px 18px;
+  border-radius: 10px;
   font-weight: 600;
-  font-size: 14px;
-  min-height: 36px;
-  min-width: 36px;
+  font-size: 22px;
+  min-height: 56px;
+  min-width: 56px;
 }
 
 /* Danger variant for Delete */
