@@ -2846,92 +2846,122 @@ if (resetSettingsBtn) resetSettingsBtn.addEventListener("click", () => filterRec
 const confirmMissingModal = document.getElementById("confirmMissingModal");
 const missingListEl = document.getElementById("missingList");
 const confirmAddMissingBtn = document.getElementById("confirmAddMissing");
-const cancelConfirmMissingBtn = document.getElementById("cancelConfirmMissing");
 const closeConfirmMissingBtn = document.getElementById("closeConfirmMissing");
+const cancelConfirmMissingBtn = document.getElementById("cancelConfirmMissing");
+
+// Store the missing ingredients to add after confirmation
+let pendingMissingIngredients = [];
 
 function showConfirmMissingModal(missing) {
   if (!confirmMissingModal || !missingListEl) return;
+  if (!missing || missing.length === 0) return;
+  
   missingListEl.innerHTML = "";
-  // build a checkbox list
-  for (const m of missing) {
-    const id = "miss_" + cid();
-    const lab = document.createElement("label");
-    lab.style.display = "block";
-    const chk = document.createElement("input");
-    chk.type = "checkbox";
-    chk.id = id;
-    chk.checked = true;
-    chk.dataset.name = String(m).trim();
-    const span = document.createElement("span");
-    span.textContent = " " + toTitleCase(m);
-    lab.appendChild(chk);
-    lab.appendChild(span);
-    missingListEl.appendChild(lab);
-  }
-  confirmMissingModal.classList.add("show");
-  confirmMissingModal.setAttribute("aria-hidden", "false");
-}
-
-function hideConfirmMissingModal() {
-  if (!confirmMissingModal) return;
-  confirmMissingModal.classList.remove("show");
-  confirmMissingModal.setAttribute("aria-hidden", "true");
-}
-
-function confirmAddMissingHandler() {
-  if (!missingListEl) return;
-  const checks = Array.from(missingListEl.querySelectorAll('input[type="checkbox"]'));
-  const noticeEl = document.getElementById("confirmNotice");
-  if (noticeEl) {
-    noticeEl.style.display = "none";
-    noticeEl.textContent = "";
-  }
-  let added = false;
-  const skipped = [];
-  for (const c of checks) {
-    if (!c.checked) continue;
-    const rawName = String(c.dataset.name || "").trim();
-    if (!rawName) continue;
+  const toAdd = [];
+  const alreadyExists = [];
+  
+  // Categorize items: to add vs. already exists
+  for (const rawName of missing) {
+    const name = String(rawName).trim();
+    if (!name) continue;
+    
     const exists = shopping.some(
       (s) =>
         String(s.name || "")
           .trim()
-          .toLowerCase() === rawName.toLowerCase()
+          .toLowerCase() === name.toLowerCase()
     );
+    
     if (exists) {
-      skipped.push(toTitleCase(rawName));
-      continue;
+      alreadyExists.push(toTitleCase(name));
+    } else {
+      toAdd.push(toTitleCase(name));
     }
-    // add as recipe-sourced item, store in Title Case for consistency
-    const name = toTitleCase(rawName);
-    shopping.push({
-      id: cid(),
-      name,
-      qty: 1,
-      category: "other",
-      bought: false,
-      autoAdded: false,
-      reason: "recipe",
-    });
-    added = true;
   }
-  if (added) {
+  
+  // Store items to add for confirmation
+  pendingMissingIngredients = toAdd;
+  
+  // Show items to be added
+  if (toAdd.length > 0) {
+    const addHeader = document.createElement("p");
+    addHeader.innerHTML = "<strong>Will be added to Shopping List:</strong>";
+    addHeader.style.marginBottom = "8px";
+    missingListEl.appendChild(addHeader);
+    
+    const addList = document.createElement("ul");
+    addList.style.marginBottom = "16px";
+    for (const item of toAdd) {
+      const li = document.createElement("li");
+      li.textContent = item;
+      addList.appendChild(li);
+    }
+    missingListEl.appendChild(addList);
+  }
+  
+  // Show items already in list
+  if (alreadyExists.length > 0) {
+    const existsHeader = document.createElement("p");
+    existsHeader.innerHTML = "<strong>Already in Shopping List:</strong>";
+    existsHeader.style.marginBottom = "8px";
+    missingListEl.appendChild(existsHeader);
+    
+    const existsList = document.createElement("ul");
+    for (const item of alreadyExists) {
+      const li = document.createElement("li");
+      li.textContent = item;
+      li.style.color = "var(--muted, #6b7280)";
+      existsList.appendChild(li);
+    }
+    missingListEl.appendChild(existsList);
+  }
+  
+  // If nothing to add, show message
+  if (toAdd.length === 0 && alreadyExists.length > 0) {
+    const notice = document.createElement("p");
+    notice.textContent = "All ingredients are already in your shopping list.";
+    notice.style.fontStyle = "italic";
+    notice.style.color = "var(--muted, #6b7280)";
+    notice.style.marginTop = "12px";
+    missingListEl.appendChild(notice);
+  }
+  
+  confirmMissingModal.classList.add("show");
+  confirmMissingModal.setAttribute("aria-hidden", "false");
+}
+
+function confirmAddMissingHandler() {
+  // Add the pending items to shopping list
+  if (pendingMissingIngredients.length > 0) {
+    for (const name of pendingMissingIngredients) {
+      shopping.push({
+        id: cid(),
+        name: name,
+        qty: 1,
+        category: "other",
+        bought: false,
+        autoAdded: false,
+        reason: "recipe",
+      });
+    }
     persistShop();
     renderShopping();
   }
-  // show skipped/duplicate notice if any
-  if (skipped.length && noticeEl) {
-    noticeEl.textContent = "Items are already in the shopping list: " + skipped.join(", ");
-    noticeEl.style.display = "";
-    // keep the modal open so user can see the notice; they may close when ready
-  } else {
-    // no skips — close modal after adding
-    hideConfirmMissingModal();
-  }
+  
+  // Clear pending items and close modal
+  pendingMissingIngredients = [];
+  hideConfirmMissingModal();
 }
 
-if (cancelConfirmMissingBtn) cancelConfirmMissingBtn.onclick = hideConfirmMissingModal;
+function hideConfirmMissingModal() {
+  if (!confirmMissingModal) return;
+  pendingMissingIngredients = [];
+  confirmMissingModal.classList.remove("show");
+  confirmMissingModal.setAttribute("aria-hidden", "true");
+}
+
 if (closeConfirmMissingBtn) closeConfirmMissingBtn.onclick = hideConfirmMissingModal;
+if (cancelConfirmMissingBtn) cancelConfirmMissingBtn.onclick = hideConfirmMissingModal;
 if (confirmAddMissingBtn) confirmAddMissingBtn.onclick = confirmAddMissingHandler;
 if (confirmMissingModal)
   confirmMissingModal.addEventListener("click", (e) => {
