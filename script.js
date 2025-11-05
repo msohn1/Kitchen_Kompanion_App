@@ -988,7 +988,7 @@ if (transferBoughtBtn)
       // Friendly notice using confirm dialog fallback
       await confirmDialog(
         "No purchased items are checked. Mark items as bought first, then try again.",
-        { title: "Nothing to transfer", okText: "OK" }
+        { title: "Nothing to Transfer", okText: "OK" }
       );
       return;
     }
@@ -2781,7 +2781,7 @@ function renderRecipes() {
     actions.className = "card-actions";
     const addBtn = document.createElement("button");
     addBtn.className = "btn";
-    addBtn.textContent = "Add missing to Shopping";
+    addBtn.textContent = "Add Missing Ingredients to Shopping";
     addBtn.onclick = () => {
       const missing = computeRecipeMatch(r).missing;
       if (!missing || missing.length === 0) return;
