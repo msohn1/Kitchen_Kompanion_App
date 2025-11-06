@@ -162,6 +162,9 @@ function addDaysISO(n) {
   return d.toISOString().slice(0, 10);
 }
 
+// How many days before expiry an item is considered "expiring"
+const EXPIRING_DAYS = 3;
+
 function formatDateShort(iso) {
   if (!iso) return "";
   const d = new Date(iso);
@@ -178,7 +181,7 @@ function isLow(item) {
 }
 function isExpiring(item) {
   const d = daysUntil(item.expiry);
-  return typeof d === "number" && d <= 3; // within 3 days (or overdue)
+  return typeof d === "number" && d <= EXPIRING_DAYS; // within EXPIRING_DAYS (or overdue)
 }
 function passesFilter(item) {
   if (currentFilter === "low" && !isLow(item)) return false;
@@ -639,6 +642,26 @@ let shopping = JSON.parse(localStorage.getItem(SHOPPING_KEY) || "[]");
 
 function persistShop() {
   localStorage.setItem(SHOPPING_KEY, JSON.stringify(shopping));
+}
+
+// If this is a new user (both lists empty), provide a small set of sample data
+if ((inventory.length || 0) === 0 && (shopping.length || 0) === 0) {
+  inventory = [
+    { id: cid(), name: "Milk", qty: 0.5, unit: "gal", minQty: 0.5, expiry: addDaysISO(3), category: "dairy" },
+    { id: cid(), name: "Eggs", qty: 6, unit: "pcs", minQty: 6, expiry: addDaysISO(7), category: "dairy" },
+    { id: cid(), name: "Spinach", qty: 0.2, unit: "lb", minQty: 0.3, expiry: addDaysISO(2), category: "veggies" },
+    { id: cid(), name: "Greek Yogurt", qty: 1, unit: "ct", minQty: 1, expiry: addDaysISO(10), category: "dairy" },
+    { id: cid(), name: "Bacon", qty: 0.2, unit: "lb", minQty: 0.3, expiry: addDaysISO(5), category: "protein" },
+  ];
+
+  shopping = [
+    { id: cid(), name: "Bread", qty: 1, category: "bakery", bought: false, autoAdded: false, reason: "sample" },
+    { id: cid(), name: "Cheese", qty: 3, category: "dairy", bought: false, autoAdded: false, reason: "sample" },
+    { id: cid(), name: "Tomato", qty: 4, category: "veggies", bought: false, autoAdded: false, reason: "sample" },
+  ];
+
+  persist();
+  persistShop();
 }
 
 function renderShopping() {
