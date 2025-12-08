@@ -101,67 +101,104 @@
       </div>
 
       <div id="setting" class="tabcontent">
-        <!-- <h2>Settings</h2> -->
+        <div class="settings-page">
+          <form id="settingsForm" class="settings-grid">
+            <section class="settings-card">
+              <div class="settings-card-head">
+                <div>
+                  <p class="eyebrow">Diet & Preference</p>
+                  <h3>What Do You Want to See?</h3>
+                  <p class="hint">Pick one primary diet or leave it open. This filters recipe suggestions.</p>
+                </div>
+              </div>
+              <div class="pill-grid">
+                <label class="pill-choice"><input type="radio" name="dietRadio" value="none" checked /> No filter</label>
+                <label class="pill-choice"><input type="radio" name="dietRadio" value="vegetarian" /> Vegetarian</label>
+                <label class="pill-choice"><input type="radio" name="dietRadio" value="vegan" /> Vegan</label>
+                <label class="pill-choice"><input type="radio" name="dietRadio" value="pescatarian" /> Pescatarian</label>
+              </div>
+            </section>
 
-        <form id="settingsForm" class="grid settings-grid">
-          <fieldset>
-            <legend>Dietary restrictions</legend>
-            <div class="checkbox-row">
-              <label><input type="checkbox" name="diet" value="vegetarian" /> Vegetarian</label>
-              <label><input type="checkbox" name="diet" value="vegan" /> Vegan</label>
-              <label><input type="checkbox" name="diet" value="pescatarian" /> Pescatarian</label>
-              <label><input type="checkbox" name="diet" value="gluten-free" /> Gluten-free</label>
-              <label><input type="checkbox" name="diet" value="dairy-free" /> Dairy-free</label>
+            <section class="settings-card">
+              <div class="settings-card-head">
+                <div>
+                  <p class="eyebrow">Allergies</p>
+                  <h3>Never Show Recipes With These</h3>
+                  <p class="hint">Recipes containing these will be hidden. Shopping auto-add respects this list.</p>
+                </div>
+              </div>
+              <div class="pill-grid">
+                <label class="pill-choice"><input type="checkbox" name="allergy" value="peanuts" /> Peanuts</label>
+                <label class="pill-choice"><input type="checkbox" name="allergy" value="tree-nuts" /> Tree nuts</label>
+                <label class="pill-choice"><input type="checkbox" name="allergy" value="milk" /> Milk</label>
+                <label class="pill-choice"><input type="checkbox" name="allergy" value="eggs" /> Eggs</label>
+                <label class="pill-choice"><input type="checkbox" name="allergy" value="soy" /> Soy</label>
+                <label class="pill-choice"><input type="checkbox" name="allergy" value="wheat" /> Wheat</label>
+                <label class="pill-choice"><input type="checkbox" name="allergy" value="fish" /> Fish</label>
+                <label class="pill-choice"><input type="checkbox" name="allergy" value="shellfish" /> Shellfish</label>
+                <label class="pill-choice"><input type="checkbox" name="allergy" value="sesame" /> Sesame</label>
+                <label class="pill-choice"><input type="checkbox" name="allergy" value="gluten" /> Gluten</label>
+                <label class="pill-choice"><input type="checkbox" name="allergy" value="mustard" /> Mustard</label>
+                <label class="pill-choice"><input type="checkbox" name="allergy" value="sulfites" /> Sulfites</label>
+                <label class="pill-choice pill-input">
+                  <input type="text" id="customAllergyInput" placeholder="Add other allergies…" />
+                  <button type="button" class="btn" id="addCustomAllergy">Add</button>
+                </label>
+              </div>
+              <div id="customAllergyList" class="chip-list"></div>
+            </section>
+
+            <section class="settings-card">
+              <div class="settings-card-head">
+                <div>
+                  <p class="eyebrow">Cooking Skill</p>
+                  <h3>Your Comfort Level</h3>
+                  <p class="hint">We won’t suggest recipes above your comfort level.</p>
+                </div>
+              </div>
+              <div class="pill-grid single-field">
+                <label class="pill-choice pill-select">
+                  <select id="skillSelect" name="skill">
+                    <option value="beginner">Beginner</option>
+                    <option value="novice">Novice</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="expert">Expert</option>
+                  </select>
+                </label>
+              </div>
+            </section>
+
+            <section class="settings-card">
+              <div class="settings-card-head">
+                <div>
+                  <p class="eyebrow">Style Preference</p>
+                  <h3>How to Bias Suggestions</h3>
+                  <p class="hint">Used to bias recipe ranking and shopping suggestions.</p>
+                </div>
+              </div>
+              <div class="pill-grid single-field">
+                <label class="pill-choice pill-select">
+                  <select id="foodPref" name="foodPref">
+                    <option value="none">No preference</option>
+                    <option value="vegetarian">More vegetarian ideas</option>
+                    <option value="vegan">More vegan ideas</option>
+                    <option value="low-carb">Lower carb focus</option>
+                    <option value="high-protein">Higher protein focus</option>
+                  </select>
+                </label>
+              </div>
+            </section>
+
+            <div class="settings-actions">
+              <div class="changes-note">Changes apply to recipes, inventory alerts, and shopping auto-add.</div>
+              <div class="action-row">
+                <button type="button" class="btn ghost" id="cancelSettings">Cancel</button>
+                <button type="button" class="btn" id="resetSettings">Reset</button>
+                <button type="button" class="btn accent" id="saveSettings">Save</button>
+              </div>
             </div>
-          </fieldset>
-
-          <fieldset>
-            <legend>Allergies</legend>
-            <div class="checkbox-row">
-              <label><input type="checkbox" name="allergy" value="peanuts" /> Peanuts</label>
-              <label><input type="checkbox" name="allergy" value="tree-nuts" /> Tree nuts</label>
-              <label><input type="checkbox" name="allergy" value="milk" /> Milk</label>
-              <label><input type="checkbox" name="allergy" value="eggs" /> Eggs</label>
-              <label><input type="checkbox" name="allergy" value="soy" /> Soy</label>
-              <label><input type="checkbox" name="allergy" value="wheat" /> Wheat</label>
-              <label><input type="checkbox" name="allergy" value="gluten" /> Gluten</label>
-              <label><input type="checkbox" name="allergy" value="fish" /> Fish</label>
-              <label><input type="checkbox" name="allergy" value="shellfish" /> Shellfish</label>
-              <label><input type="checkbox" name="allergy" value="sesame" /> Sesame</label>
-              <label><input type="checkbox" name="allergy" value="mustard" /> Mustard</label>
-              <label><input type="checkbox" name="allergy" value="sulfites" /> Sulfites</label>
-              <label><input type="checkbox" name="allergy" value="celery" /> Celery</label>
-              <label><input type="checkbox" name="allergy" value="mollusks" /> Mollusks</label>
-              <label><input type="checkbox" name="allergy" value="corn" /> Corn</label>
-            </div>
-          </fieldset>
-
-          <label>
-            <span>Cooking skill</span>
-            <select id="skillSelect" name="skill">
-              <option value="beginner">Beginner</option>
-              <option value="novice">Novice</option>
-              <option value="intermediate">Intermediate</option>
-              <option value="expert">Expert</option>
-            </select>
-          </label>
-
-          <label>
-            <span>Food preference</span>
-            <select id="foodPref" name="foodPref">
-              <option value="none">No preference</option>
-              <option value="vegetarian">Prefer vegetarian</option>
-              <option value="vegan">Prefer vegan</option>
-              <option value="low-carb">Prefer low-carb</option>
-              <option value="high-protein">Prefer high-protein</option>
-            </select>
-          </label>
-
-          <div class="modal-actions" style="grid-column: 1 / -1">
-            <button type="button" class="btn" id="resetSettings">Reset</button>
-            <button type="button" class="btn accent" id="saveSettings">Save</button>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
 
       <!-- Add Item Modal -->

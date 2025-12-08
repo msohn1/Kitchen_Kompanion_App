@@ -1807,6 +1807,31 @@ function renderSettings() {
   document.querySelectorAll('input[name="allergy"]').forEach((chk) => {
     chk.checked = allergySet.has(chk.value);
   });
+  // render custom allergies as chips
+  const customWrap = document.getElementById("customAllergyList");
+  if (customWrap) {
+    customWrap.innerHTML = "";
+    const customs = settings.customAllergies || [];
+    for (const c of customs) {
+      const chip = document.createElement("span");
+      chip.className = "chip";
+      chip.textContent = c;
+      const removeBtn = document.createElement("button");
+      removeBtn.className = "icon-btn small";
+      removeBtn.textContent = "×";
+      removeBtn.onclick = () => {
+        settings.customAllergies = customs.filter((x) => x !== c);
+        settings.allergies = (settings.allergies || []).filter(
+          (x) => String(x).toLowerCase() !== String(c).toLowerCase()
+        );
+        persistSettings();
+        renderSettings();
+        filterRecipesByAllergies();
+      };
+      chip.appendChild(removeBtn);
+      customWrap.appendChild(chip);
+    }
+  }
   // skill
   const skill = document.getElementById("skillSelect");
   if (skill) skill.value = settings.skill || "beginner";
@@ -1834,7 +1859,9 @@ function saveSettingsFromForm() {
   const allergies = Array.from(document.querySelectorAll('input[name="allergy"]:checked')).map(
     (c) => c.value
   );
-  settings.allergies = allergies; // only keys
+  const customAllergies = settings.customAllergies || [];
+  settings.allergies = Array.from(new Set([...allergies, ...customAllergies]));
+  settings.customAllergies = customAllergies;
   settings.skill = document.getElementById("skillSelect")?.value || "beginner";
   settings.foodPref = document.getElementById("foodPref")?.value || "none";
   persistSettings();
@@ -3073,20 +3100,11 @@ if (recipeSortSelect) recipeSortSelect.addEventListener("change", () => renderRe
 renderRecipes();
 
 // wiring
-const addAllergyBtn = document.getElementById("addAllergyBtn");
-const allergyInput = document.getElementById("allergyInput");
 const saveSettingsBtn = document.getElementById("saveSettings");
 const resetSettingsBtn = document.getElementById("resetSettings");
-
-if (addAllergyBtn && allergyInput)
-  addAllergyBtn.onclick = () => {
-    const v = String(allergyInput.value || "").trim();
-    if (!v) return;
-    settings.allergies = Array.from(new Set([...(settings.allergies || []), v]));
-    allergyInput.value = "";
-    persistSettings();
-    renderSettings();
-  };
+const cancelSettingsBtn = document.getElementById("cancelSettings");
+const customAllergyInput = document.getElementById("customAllergyInput");
+const customAllergyBtn = document.getElementById("addCustomAllergy");
 
 if (saveSettingsBtn)
   saveSettingsBtn.onclick = () => {
@@ -3097,6 +3115,28 @@ if (resetSettingsBtn)
     settings = {};
     persistSettings();
     renderSettings();
+  };
+if (cancelSettingsBtn)
+  cancelSettingsBtn.onclick = () => {
+    renderSettings(); // discard local edits
+  };
+if (customAllergyBtn && customAllergyInput)
+  customAllergyBtn.onclick = () => {
+    const v = String(customAllergyInput.value || "").trim();
+    if (!v) return;
+    const existing = new Set((settings.customAllergies || []).map((x) => x.toLowerCase()));
+    if (existing.has(v.toLowerCase())) {
+      customAllergyInput.value = "";
+      return;
+    }
+    settings.customAllergies = [...(settings.customAllergies || []), v];
+    settings.allergies = Array.from(
+      new Set([...(settings.allergies || []), v])
+    );
+    customAllergyInput.value = "";
+    persistSettings();
+    renderSettings();
+    filterRecipesByAllergies();
   };
 
 loadSettings();

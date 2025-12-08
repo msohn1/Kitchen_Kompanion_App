@@ -742,80 +742,7 @@ th.sortable[data-sort-dir="desc"]::after {
 /* Settings */
 .settings-grid {
   grid-template-columns: 1fr;
-  gap: 12px;
-}
-.settings-grid fieldset {
-  border: 1px solid #e5e7eb;
-  padding: 10px;
-  border-radius: 10px;
-}
-.checkbox-row {
-  /* symmetric, responsive button-like checkboxes */
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
-  gap: 12px 14px;
-}
-/* label as a pill card with centered text */
-.checkbox-row label {
-  /* square tile */
-  aspect-ratio: 1 / 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 8px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px; /* a bit sharper for a squarer look */
-  background: #fff;
-  text-align: center;
-  font-weight: 600;
-}
-/* make the checkbox a tidy square */
-.checkbox-row input[type="checkbox"] {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 28px;
-  height: 28px;
-  border: 2px solid #d1d5db;
-  border-radius: 4px; /* more of a square */
-  background: #fff;
-  display: inline-block;
-  position: relative;
-}
-.checkbox-row input[type="checkbox"]:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.18);
-}
-.checkbox-row input[type="checkbox"]:checked {
-  background: var(--brand-700);
-  border-color: var(--brand-700);
-}
-.checkbox-row input[type="checkbox"]:checked::after {
-  content: "";
-  position: absolute;
-  left: 8px;
-  top: 3px;
-  width: 8px;
-  height: 14px;
-  border: solid #fff;
-  border-width: 0 3px 3px 0;
-  transform: rotate(45deg);
-}
-/* highlight the whole label when checked (progressive enhancement) */
-.checkbox-row label:has(input[type="checkbox"]:checked) {
-  border-color: rgba(30, 64, 175, 0.45);
-  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.08);
-}
-/* ensure ancillary text input (“specify”) fits nicely */
-.checkbox-row .small-input {
-  width: 100%;
-  max-width: 260px;
-  padding: 8px 10px;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  min-height: 36px;
-  font-size: 14px;
+  gap: 16px;
 }
 .chip-list {
   margin-top: 8px;
@@ -1080,4 +1007,208 @@ th.sortable[data-sort-dir="desc"]::after {
 /* Align space between toolbar and first recipe card with inventory/shopping */
 #recipes .inv-wrap > #recipesList > .recipe-card:first-child {
   margin-top: 0 !important; /* ensure toolbar↔first card gap matches other tabs */
+}
+
+/* Settings redesign */
+.settings-page {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 6px;
+}
+.settings-hero {
+  background: linear-gradient(135deg, #f1f5f9, #e0ecff);
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 12px;
+  color: #475569;
+  margin: 0 0 4px 0;
+}
+.lead {
+  margin: 4px 0 0 0;
+  color: #334155;
+  font-size: 14px;
+}
+.settings-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.settings-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.settings-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.settings-card-head h3 {
+  margin: 0;
+}
+.settings-card-head .hint {
+  margin: 2px 0 0 0;
+}
+.hint {
+  color: var(--muted);
+  font-size: 13px;
+}
+.pill-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 6px;
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: var(--brand-700);
+  font-weight: 700;
+  font-size: 12px;
+}
+.pill.muted {
+  background: #f1f5f9;
+  color: #475569;
+}
+.pill-choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #f8fafc;
+  font-weight: 600;
+  cursor: pointer;
+}
+.pill-choice.pill-select {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+.pill-choice.pill-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  grid-column: 1 / -1; /* stretch across the row */
+}
+.pill-choice.pill-input input[type="text"] {
+  border: none;
+  background: transparent;
+  flex: 1;
+  min-width: 180px;
+  font-size: 16px;
+  padding: 10px 6px;
+}
+.pill-choice.pill-input input[type="text"]:focus {
+  outline: none;
+}
+.pill-choice.pill-input .btn {
+  font-weight: 700;
+  padding: 10px 12px;
+  min-height: 38px;
+}
+.pill-choice input {
+  accent-color: var(--brand-700);
+  width: 18px;
+  height: 18px;
+}
+.chip-list {
+  margin-top: 6px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.chip {
+  background: #f3f4f6;
+  padding: 6px 8px;
+  border-radius: 999px;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  font-weight: 600;
+  font-size: 13px;
+}
+.chip .icon-btn.small {
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+.pill-select select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: #fff;
+  border: 1px solid #d7dbe3;
+  border-radius: 12px;
+  font-size: 16px;
+  width: 100%;
+  padding: 12px 12px;
+  padding-right: 40px; /* space for chevron */
+  min-height: 46px;
+  background-image: url("data:image/svg+xml,%3Csvg width='14' height='10' viewBox='0 0 14 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 3l5 5 5-5' stroke='%231e3a8a' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 14px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.single-field {
+  grid-template-columns: 1fr;
+}
+.pill-choice:hover {
+  border-color: rgba(30, 64, 175, 0.4);
+}
+.two-col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+}
+.two-col select {
+  padding: 10px 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 16px;
+  min-height: 42px;
+  width: 100%;
+}
+.settings-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.changes-note {
+  color: var(--muted);
+  font-size: 13px;
+}
+.action-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.btn.ghost {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
 }
