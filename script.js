@@ -296,6 +296,29 @@ function formatIngredientLabel(raw) {
   return `1 × ${toTitleCase(s)}`;
 }
 
+/* ---------- Recipe favorites ---------- */
+const FAVORITES_KEY = "kk_recipe_favorites_v1";
+let favoriteRecipes = new Set();
+try {
+  const favArr = JSON.parse(localStorage.getItem(FAVORITES_KEY) || "[]");
+  favoriteRecipes = new Set(Array.isArray(favArr) ? favArr : []);
+} catch {
+  favoriteRecipes = new Set();
+}
+function persistFavorites() {
+  localStorage.setItem(FAVORITES_KEY, JSON.stringify(Array.from(favoriteRecipes)));
+}
+function isFavoriteRecipe(id) {
+  return favoriteRecipes.has(id);
+}
+function toggleFavoriteRecipe(id) {
+  if (!id) return;
+  if (favoriteRecipes.has(id)) favoriteRecipes.delete(id);
+  else favoriteRecipes.add(id);
+  persistFavorites();
+  renderRecipes();
+}
+
 // How many days before expiry an item is considered "expiring"
 const EXPIRING_DAYS = 3;
 
@@ -2939,7 +2962,7 @@ function renderRecipes() {
   const list = recipes
     .map((r) => {
       const match = computeRecipeMatch(r);
-      return { ...r, match };
+      return { ...r, match, favorite: isFavoriteRecipe(r.id) };
     })
     .filter((r) => {
       // Apply settings-based filters first
@@ -2960,15 +2983,26 @@ function renderRecipes() {
   // sort according to recipeSort control
   if (sortMode === "recommended") {
     list.sort(
-      (a, b) => b.match.availableCount / b.match.total - a.match.availableCount / a.match.total
+      (a, b) =>
+        (b.favorite === a.favorite
+          ? b.match.availableCount / b.match.total - a.match.availableCount / a.match.total
+          : Number(b.favorite) - Number(a.favorite)) || a.title.localeCompare(b.title)
     );
   } else if (sortMode === "missing") {
     // most ingredients match -> descending by availableCount
     list.sort(
-      (a, b) => b.match.availableCount - a.match.availableCount || a.title.localeCompare(b.title)
+      (a, b) =>
+        (b.favorite === a.favorite
+          ? b.match.availableCount - a.match.availableCount
+          : Number(b.favorite) - Number(a.favorite)) || a.title.localeCompare(b.title)
     );
   } else if (sortMode === "time") {
-    list.sort((a, b) => (a.time || 0) - (b.time || 0));
+    list.sort(
+      (a, b) =>
+        (b.favorite === a.favorite
+          ? (a.time || 0) - (b.time || 0)
+          : Number(b.favorite) - Number(a.favorite)) || a.title.localeCompare(b.title)
+    );
   }
 
   for (const r of list) {
@@ -3005,6 +3039,15 @@ function renderRecipes() {
     meta.className = "meta";
     meta.textContent = `${r.match.availableCount}/${r.match.total} ingredients available • ${r.time} min`;
     head.appendChild(meta);
+    const favBtn = document.createElement("button");
+    favBtn.className = "favorite-btn" + (r.favorite ? " active" : "");
+    favBtn.setAttribute("aria-label", r.favorite ? "Remove from favorites" : "Add to favorites");
+    favBtn.textContent = r.favorite ? "★" : "☆";
+    favBtn.onclick = (e) => {
+      e.stopPropagation();
+      toggleFavoriteRecipe(r.id);
+    };
+    head.appendChild(favBtn);
     const toggle = document.createElement("button");
     toggle.className = "toggle-btn";
     toggle.textContent = "▾";

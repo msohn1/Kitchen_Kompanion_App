@@ -905,6 +905,26 @@ th.sortable[data-sort-dir="desc"]::after {
   background: linear-gradient(#ffffff, #f2f4f7);
   border: 1px solid rgba(15, 23, 42, 0.06);
 }
+.favorite-btn {
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  transition: transform 0.1s ease, background 0.1s ease;
+}
+.favorite-btn:hover {
+  background: #eef2ff;
+  transform: translateY(-1px);
+}
+.favorite-btn.active {
+  color: #f59e0b;
+}
 
 /* generic button styles for cards and other places */
 .btn {
