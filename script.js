@@ -387,7 +387,6 @@ function compareInventory(a, b) {
 function updateInventoryFilterButtons() {
   const map = [
     { id: "filterAll", val: "all" },
-    { id: "filterLow", val: "low" },
     { id: "filterExpiring", val: "expiring" },
   ];
   for (const m of map) {
@@ -1127,7 +1126,6 @@ function toggleBought(id) {
 
 /* ---------- Wire up events ---------- */
 const fFilterAll = document.getElementById("filterAll");
-const fFilterLow = document.getElementById("filterLow");
 const fFilterExp = document.getElementById("filterExpiring");
 const fFilterCategory = document.getElementById("filterCategory");
 const fSearch = document.getElementById("invSearch");
@@ -1151,11 +1149,6 @@ const transferBoughtBtn = document.getElementById("transferBought");
 if (fFilterAll)
   fFilterAll.onclick = () => {
     currentFilter = "all";
-    renderInventory();
-  };
-if (fFilterLow)
-  fFilterLow.onclick = () => {
-    currentFilter = "low";
     renderInventory();
   };
 if (fFilterExp)

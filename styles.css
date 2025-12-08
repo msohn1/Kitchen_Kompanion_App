@@ -45,7 +45,7 @@
   left: 0;
   width: 100%;
   display: flex;
-  background: var(--brand-700);
+  background: #0f1f4b;
   height: 70px;
   z-index: 800; /* sit below modal (modal uses z-index:1000) */
 }
@@ -63,6 +63,7 @@
   justify-content: center;
   outline: none;
   gap: 6px;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .tablink img {
@@ -72,11 +73,13 @@
   display: block;
   margin: 0 auto;
   object-fit: contain;
+  filter: brightness(0) invert(1);
 }
 
 .tablink.active {
-  background: var(--brand-600);
-  color: var(--tab);
+  background: #0b579d;
+  color: #ffffff;
+  box-shadow: inset 0 4px 0 rgba(36, 189, 255, 0.35);
 }
 
 /* Tab icon styling for img elements */
@@ -87,7 +90,7 @@
   margin: 0 auto;
   /* Apply color filter to make icons use --tab color (24BDFF) even when inactive */
   /* filter: brightness(0) saturate(100%) invert(0%) sepia(100%) saturate(1000%) hue-rotate(0deg) brightness(1) drop-shadow(0 0 0 var(--tab)); */
-  opacity: 0.7;
+  opacity: 0.85;
 }
 
 .tablink.active .tab-icon {
@@ -119,10 +122,10 @@
 
 /* Inventory UI */
 .inv-toolbar {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto auto 1fr auto auto;
   gap: 8px;
   align-items: center;
-  flex-wrap: nowrap;
   margin-bottom: 12px;
   font-size: 16px; /* larger controls */
 }
@@ -144,9 +147,9 @@
   border-color: transparent;
 }
 #invSearch {
-  flex: 0 1 120px;
-  min-width: 100px;
-  max-width: 180px;
+  flex: 1 1 240px;
+  min-width: 160px;
+  max-width: 360px;
   padding: 10px 12px;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
