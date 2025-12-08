@@ -267,6 +267,8 @@ inventory = inventory.map((it) => {
 let currentFilter = "all"; // all | low | expiring
 let currentSearch = "";
 let currentCategory = "all"; // all or category key like 'dairy'
+let currentSort = { key: "name", dir: "asc" }; // sorting for inventory
+let currentShopSort = { key: "name", dir: "asc" }; // sorting for shopping list
 
 /* ---------- Helpers ---------- */
 function cid() {
@@ -286,6 +288,14 @@ function addDaysISO(n) {
   return d.toISOString().slice(0, 10);
 }
 
+// Ingredient display helper: show a default "1 × name" when no amount present
+function formatIngredientLabel(raw) {
+  const s = String(raw || "").trim();
+  if (!s) return "";
+  if (/^\d/.test(s)) return s;
+  return `1 × ${toTitleCase(s)}`;
+}
+
 // How many days before expiry an item is considered "expiring"
 const EXPIRING_DAYS = 3;
 
@@ -295,8 +305,10 @@ function formatDateShort(iso) {
   if (Number.isNaN(d.getTime())) return iso;
   const month = d.toLocaleDateString("en-US", { month: "short" });
   const day = d.getDate();
-  const year = d.getFullYear().toString().slice(-2);
-  return `${month} ${day}, '${year}`;
+  const year = d.getFullYear();
+  const thisYear = new Date().getFullYear();
+  // Prefer concise month/day; only show year when different from current year
+  return year === thisYear ? `${month} ${day}` : `${month} ${day}, ${year}`;
 }
 
 /* ---------- Filtering ---------- */
@@ -322,6 +334,32 @@ function passesFilter(item) {
   return true;
 }
 
+function compareInventory(a, b) {
+  const dir = currentSort.dir === "desc" ? -1 : 1;
+  switch (currentSort.key) {
+    case "category": {
+      const ac = String(a.category || "").toLowerCase();
+      const bc = String(b.category || "").toLowerCase();
+      return ac.localeCompare(bc) * dir;
+    }
+    case "expiry": {
+      const adRaw = a.expiry ? new Date(a.expiry) : null;
+      const bdRaw = b.expiry ? new Date(b.expiry) : null;
+      const ad = adRaw && Number.isFinite(adRaw.getTime()) ? adRaw.getTime() : Infinity;
+      const bd = bdRaw && Number.isFinite(bdRaw.getTime()) ? bdRaw.getTime() : Infinity;
+      if (!Number.isFinite(ad) && !Number.isFinite(bd)) return a.name.localeCompare(b.name) * dir;
+      return (ad - bd) * dir;
+    }
+    case "qty": {
+      const aq = Number(a.qty) || 0;
+      const bq = Number(b.qty) || 0;
+      return aq === bq ? a.name.localeCompare(b.name) * dir : (aq - bq) * dir;
+    }
+    default:
+      return a.name.localeCompare(b.name) * dir;
+  }
+}
+
 // Update visual active state for inventory filter buttons
 function updateInventoryFilterButtons() {
   const map = [
@@ -337,16 +375,55 @@ function updateInventoryFilterButtons() {
   }
 }
 
+function updateSortIndicators() {
+  const headers = document.querySelectorAll("#invTable thead th.sortable");
+  headers.forEach((h) => {
+    const key = h.getAttribute("data-sort");
+    if (key === currentSort.key) {
+      h.setAttribute("data-sort-dir", currentSort.dir);
+      h.setAttribute("aria-sort", currentSort.dir === "asc" ? "ascending" : "descending");
+    } else {
+      h.removeAttribute("data-sort-dir");
+      h.removeAttribute("aria-sort");
+    }
+  });
+}
+
+function compareShopping(a, b) {
+  const dir = currentShopSort.dir === "desc" ? -1 : 1;
+  if (currentShopSort.key === "category") {
+    const ac = String(a.category || "").toLowerCase();
+    const bc = String(b.category || "").toLowerCase();
+    return ac.localeCompare(bc) * dir || a.name.localeCompare(b.name) * dir;
+  }
+  return a.name.localeCompare(b.name) * dir;
+}
+
+function updateShopSortIndicators() {
+  const headers = document.querySelectorAll("#shopTable thead th.sortable");
+  headers.forEach((h) => {
+    const key = h.getAttribute("data-sort");
+    if (key === currentShopSort.key) {
+      h.setAttribute("data-sort-dir", currentShopSort.dir);
+      h.setAttribute("aria-sort", currentShopSort.dir === "asc" ? "ascending" : "descending");
+    } else {
+      h.removeAttribute("data-sort-dir");
+      h.removeAttribute("aria-sort");
+    }
+  });
+}
+
 /* ---------- Rendering ---------- */
 function renderInventory() {
   const tbody = document.getElementById("invBody");
   const empty = document.getElementById("invEmpty");
   tbody.innerHTML = "";
 
-  const shown = inventory.filter(passesFilter).sort((a, b) => a.name.localeCompare(b.name));
+  const shown = inventory.filter(passesFilter).sort(compareInventory);
 
   if (shown.length === 0) {
     empty.classList.remove("hidden");
+    updateSortIndicators();
     return;
   }
   empty.classList.add("hidden");
@@ -354,44 +431,28 @@ function renderInventory() {
   for (const it of shown) {
     const tr = document.createElement("tr");
 
-    // Name + badges (stacked): primary badges on first line, category on its own line below
+    // Name + inline badge
     const tdName = document.createElement("td");
-    const nameLine = document.createElement("div");
-    nameLine.className = "name-line clickable";
-    nameLine.textContent = it.name;
-    const openFullEdit = () => showEditItemModal(it.id);
-    nameLine.tabIndex = 0;
-    nameLine.addEventListener("click", openFullEdit);
-    nameLine.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        openFullEdit();
-      }
-    });
+    tdName.className = "name-cell";
+    const nameInline = document.createElement("div");
+    nameInline.className = "name-inline";
 
-    const badgeLine = document.createElement("div");
-    badgeLine.className = "badge-line";
-    const badgeLeft = document.createElement("div");
-    badgeLeft.className = "badge-col left";
-    const badgeRight = document.createElement("div");
-    badgeRight.className = "badge-col right";
-    // primary badges: Low on left, Expiring on right
-    if (isLow(it)) {
-      const b = document.createElement("span");
-      b.className = "badge low";
-      b.textContent = "Low";
-      badgeLeft.appendChild(b);
-    }
+    const nameLine = document.createElement("div");
+    nameLine.className = "name-line";
+    nameLine.textContent = it.name;
+
+    const badgeInline = document.createElement("div");
+    badgeInline.className = "badge-inline";
     if (isExpiring(it)) {
       const b2 = document.createElement("span");
       b2.className = "badge exp";
       b2.textContent = "Expiring";
-      badgeRight.appendChild(b2);
+      badgeInline.appendChild(b2);
     }
-    badgeLine.appendChild(badgeLeft);
-    badgeLine.appendChild(badgeRight);
-    const tdQty = makeQtyEditableCell(it);
-    const tdUnit = domTD("", it.unit || "");
+
+    nameInline.append(nameLine, badgeInline);
+    tdName.appendChild(nameInline);
+
     const tdCat = domTD("category", "");
     if (it.category) {
       const catBadge = document.createElement("span");
@@ -404,35 +465,45 @@ function renderInventory() {
       tdCat.appendChild(catBadge);
     }
     const tdExp = makeExpiryEditableCell(it);
-    // show category on its own line (unless both Low and Expiring present => hide for spacing)
-    const cat = String(it.category || "");
-    const showCategory = cat && !(isLow(it) && isExpiring(it));
-    tdName.appendChild(nameLine);
-    tdName.appendChild(badgeLine);
-
+    tdExp.classList.add("expiry-cell");
     const tdAct = document.createElement("td");
     tdAct.className = "action-cell";
 
     const minusBtn = makeRowBtn("−", () => adjustQty(it.id, -1));
     minusBtn.classList.add("small");
+    minusBtn.setAttribute("aria-label", `Decrease ${it.name}`);
+
+    const qtyDisplay = document.createElement("span");
+    qtyDisplay.className = "qty-display";
+    qtyDisplay.textContent = formatQtyUnit(it) || "0";
+
     const plusBtn = makeRowBtn("+", () => adjustQty(it.id, +1));
     plusBtn.classList.add("small");
+    plusBtn.setAttribute("aria-label", `Increase ${it.name}`);
+
+    const editBtn = makeRowBtn("✎", () => showEditItemModal(it.id));
+    editBtn.classList.add("ghost");
+    editBtn.setAttribute("aria-label", `Edit ${it.name}`);
+    editBtn.title = "Edit item";
+
     const delBtn = makeRowBtn("×", () => removeItem(it.id));
     delBtn.classList.add("danger", "small");
+    delBtn.setAttribute("aria-label", `Delete ${it.name}`);
 
-    // layout: single horizontal row with minus, plus, Delete
+    // layout: inline controls with qty display
     const actionsWrap = document.createElement("div");
     actionsWrap.className = "row-actions";
-    actionsWrap.append(minusBtn, plusBtn, delBtn);
+    actionsWrap.append(minusBtn, qtyDisplay, plusBtn, editBtn, delBtn);
     tdAct.appendChild(actionsWrap);
 
-    tr.append(tdName, tdQty, tdUnit, tdCat, tdExp, tdAct);
+    tr.append(tdName, tdCat, tdExp, tdAct);
     tbody.appendChild(tr);
   }
   // After rendering inventory, ensure low/expiring items are present in shopping list
   syncLowExpiringToShopping();
   // update button highlight states
   updateInventoryFilterButtons();
+  updateSortIndicators();
 }
 
 /* ---------- Edit full inventory item modal ---------- */
@@ -456,7 +527,16 @@ function showEditItemModal(id) {
   editItemIdInput.value = it.id;
   editItemNameInput.value = it.name || "";
   editItemQtyInput.value = String(Number(it.qty) || 0);
-  editItemUnitInput.value = it.unit || "";
+  const unitVal = String(it.unit || "").toLowerCase();
+  if (
+    unitVal &&
+    editItemUnitInput &&
+    !Array.from(editItemUnitInput.options || []).some((opt) => opt.value === unitVal)
+  ) {
+    editItemUnitInput.add(new Option(unitVal, unitVal, true, true));
+  } else {
+    editItemUnitInput.value = unitVal;
+  }
   editItemMinQtyInput.value = String(Number(it.minQty) || 0);
   editItemExpiryInput.value = it.expiry && /^\d{4}-\d{2}-\d{2}$/.test(String(it.expiry)) ? it.expiry : "";
   editItemCategorySelect.value = String(it.category || "other").toLowerCase();
@@ -490,7 +570,7 @@ if (editItemForm)
     const nextName = String(editItemNameInput.value || "").trim();
     const qtyVal = Number(editItemQtyInput.value);
     const minQtyVal = Number(editItemMinQtyInput.value);
-    const unitVal = String(editItemUnitInput.value || "");
+    const unitVal = String(editItemUnitInput.value || "").trim().toLowerCase();
     const expiryVal = String(editItemExpiryInput.value || "");
     const catVal = String(editItemCategorySelect.value || "other").toLowerCase();
 
@@ -621,6 +701,12 @@ function fmtNum(n) {
   const v = Number(n);
   return Number.isFinite(v) ? (v % 1 ? v.toFixed(2) : String(v)) : "";
 }
+function formatQtyUnit(it) {
+  const qty = fmtNum(it.qty);
+  const unit = String(it.unit || "").trim();
+  const displayUnit = unit.length === 1 ? unit.toUpperCase() : unit;
+  return unit ? `${qty} ${displayUnit}` : qty;
+}
 function makeRowBtn(label, fn) {
   const b = document.createElement("button");
   b.className = "btn row-btn";
@@ -685,7 +771,7 @@ async function addItemFromForm(form) {
     id: cid(),
     name: String(data.get("name")).trim(),
     qty: Number(data.get("qty")),
-    unit: String(data.get("unit") || ""),
+    unit: String(data.get("unit") || "").trim().toLowerCase(),
     minQty: Number(data.get("minQty")),
     expiry: String(data.get("expiry") || ""),
     category: String(data.get("category") || "other").toLowerCase(),
@@ -812,9 +898,10 @@ function renderShopping() {
       if (autoFilter === "manual" && it.autoAdded) return false;
       return true;
     })
-    .sort((a, b) => a.name.localeCompare(b.name));
+    .sort(compareShopping);
   if (shown.length === 0) {
     empty.classList.remove("hidden");
+    updateShopSortIndicators();
     return;
   }
   empty.classList.add("hidden");
@@ -837,12 +924,7 @@ function renderShopping() {
     nameLine.className = "name-line";
     nameLine.textContent = it.name;
     if (it.bought) nameLine.style.textDecoration = "line-through";
-    const badgeLine = document.createElement("div");
-    badgeLine.className = "badge-line";
-    tdName.append(nameLine, badgeLine);
-
-    // Quantity column - editable with modal
-    const tdQty = makeShopQtyEditableCell(it);
+    tdName.append(nameLine);
 
     const tdCat = document.createElement("td");
     if (it.category) {
@@ -855,66 +937,55 @@ function renderShopping() {
       c.textContent = it.category.charAt(0).toUpperCase() + it.category.slice(1);
       tdCat.appendChild(c);
     }
-    // visual marker for auto-added items
-    if (it.autoAdded) {
-      const autoMark = document.createElement("span");
-      autoMark.className = "auto-mark";
-      autoMark.title = "Automatically added from inventory (low/expiring)";
-      autoMark.setAttribute("role", "img");
-      autoMark.setAttribute("aria-label", "Auto-added");
-      // textual Auto marker for clarity
-      autoMark.textContent = "Auto";
-      tdCat.appendChild(autoMark);
-    }
 
-    // Source column (manual | low | expiring | both)
-    const tdSource = document.createElement("td");
-    const src = String(it.reason || (it.autoAdded ? "auto" : "manual"));
-    const srcBadge = document.createElement("span");
-    srcBadge.className = "source-badge source-" + src.replace(/[^a-z0-9]+/g, "-");
-    // user-friendly text
-    const labelMap = {
-      manual: "Manual",
-      low: "Low",
-      expiring: "Expiring",
-      both: "Low & Expiring",
-      auto: "Auto",
-      recipe: "Recipe",
-    };
-    srcBadge.textContent = labelMap[src] || src;
-    tdSource.appendChild(srcBadge);
+    // Qty controls (styled similar to inventory)
+    const tdQty = document.createElement("td");
+    tdQty.className = "num qty-cell";
+    const qtyWrap = document.createElement("div");
+    qtyWrap.className = "qty-wrap";
 
-    const tdAct = document.createElement("td");
-    tdAct.className = "action-cell";
-    const actionsWrap = document.createElement("div");
-    actionsWrap.className = "row-actions";
-
-    // Add -/+ buttons and Delete button in same row
     const minusBtn = document.createElement("button");
     minusBtn.className = "btn row-btn small";
     minusBtn.textContent = "−";
     minusBtn.onclick = () => adjustShopQty(it.id, -1);
+
+    const qtyDisplay = document.createElement("span");
+    qtyDisplay.className = "qty-display";
+    qtyDisplay.textContent = it.qty || 1;
+    qtyDisplay.tabIndex = 0;
+    qtyDisplay.addEventListener("click", () => showEditCellModal(it.id, "qty", "shopping"));
+    qtyDisplay.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        showEditCellModal(it.id, "qty", "shopping");
+      }
+    });
 
     const plusBtn = document.createElement("button");
     plusBtn.className = "btn row-btn small";
     plusBtn.textContent = "+";
     plusBtn.onclick = () => adjustShopQty(it.id, +1);
 
+    qtyWrap.append(minusBtn, qtyDisplay, plusBtn);
+    tdQty.appendChild(qtyWrap);
+
+    const tdAct = document.createElement("td");
+    tdAct.className = "action-cell";
+    const actionsWrap = document.createElement("div");
+    actionsWrap.className = "row-actions";
+
     const del = document.createElement("button");
     del.className = "btn row-btn danger small";
     del.textContent = "×";
     del.onclick = () => removeShopItem(it.id);
 
-    actionsWrap.append(minusBtn, plusBtn, del);
+    actionsWrap.append(del);
     tdAct.append(actionsWrap);
 
-    // mark row visually when auto-added
-    if (it.autoAdded) tr.classList.add("auto-row");
-    // mark row visually when recipe-sourced
-    if ((it.reason || "").toLowerCase() === "recipe") tr.classList.add("row-source-recipe");
-    tr.append(tdChk, tdName, tdQty, tdCat, tdSource, tdAct);
+    tr.append(tdChk, tdName, tdCat, tdQty, tdAct);
     tbody.appendChild(tr);
   }
+  updateShopSortIndicators();
 }
 
 // Remove auto-added shopping items when their inventory source is no longer low/expiring
@@ -1041,6 +1112,8 @@ const openAddBtn = document.getElementById("openAddModal");
 const closeAddBtn = document.getElementById("closeAddModal");
 const cancelAddBtn = document.getElementById("cancelAdd");
 const addForm = document.getElementById("addForm");
+const invSortHeaders = document.querySelectorAll("#invTable thead th.sortable");
+const shopSortHeaders = document.querySelectorAll("#shopTable thead th.sortable");
 
 // Shopping UI elements
 const openAddShopBtn = document.getElementById("openAddShopModal");
@@ -1067,6 +1140,32 @@ if (fFilterExp)
     currentFilter = "expiring";
     renderInventory();
   };
+if (invSortHeaders)
+  invSortHeaders.forEach((th) => {
+    th.addEventListener("click", () => {
+      const key = th.getAttribute("data-sort");
+      if (!key) return;
+      if (currentSort.key === key) {
+        currentSort = { key, dir: currentSort.dir === "asc" ? "desc" : "asc" };
+      } else {
+        currentSort = { key, dir: "asc" };
+      }
+      renderInventory();
+    });
+  });
+if (shopSortHeaders)
+  shopSortHeaders.forEach((th) => {
+    th.addEventListener("click", () => {
+      const key = th.getAttribute("data-sort");
+      if (!key) return;
+      if (currentShopSort.key === key) {
+        currentShopSort = { key, dir: currentShopSort.dir === "asc" ? "desc" : "asc" };
+      } else {
+        currentShopSort = { key, dir: "asc" };
+      }
+      renderShopping();
+    });
+  });
 if (fFilterCategory)
   fFilterCategory.addEventListener("change", (e) => {
     currentCategory = e.target.value;
@@ -2881,8 +2980,12 @@ function renderRecipes() {
     head.appendChild(meta);
     const toggle = document.createElement("button");
     toggle.className = "toggle-btn";
-    toggle.textContent = "+";
-    toggle.onclick = () => card.classList.toggle("expanded");
+    toggle.textContent = "▾";
+    toggle.setAttribute("aria-label", "Toggle details");
+    toggle.onclick = () => {
+      const expanded = card.classList.toggle("expanded");
+      toggle.textContent = expanded ? "▴" : "▾";
+    };
     head.appendChild(toggle);
     card.appendChild(head);
 
@@ -2890,14 +2993,18 @@ function renderRecipes() {
     content.className = "card-content";
     const ingDiv = document.createElement("div");
     ingDiv.className = "ingredients";
-    const h4 = document.createElement("h4");
-    h4.textContent = "Ingredients";
-    ingDiv.appendChild(h4);
-    const ul = document.createElement("ul");
     // use perIngredient availability if present
     const per =
       (r.match && r.match.perIngredient) ||
       r.ingredients.map((i) => ({ orig: i, norm: normalizeIngredient(i), available: false }));
+    const h4 = document.createElement("h4");
+    h4.textContent = `Ingredients (${per.length})`;
+    const ingMeta = document.createElement("div");
+    ingMeta.className = "ing-meta";
+    ingMeta.textContent = `Need ${per.length} total • ${r.match.availableCount} available`;
+    ingDiv.appendChild(h4);
+    ingDiv.appendChild(ingMeta);
+    const ul = document.createElement("ul");
     for (const p of per) {
       const li = document.createElement("li");
       const pill = document.createElement("span");
@@ -2905,7 +3012,7 @@ function renderRecipes() {
       pill.textContent = p.available ? "✓" : "✕";
       pill.title = p.available ? "Available in inventory" : "Missing from inventory (✕)";
       const text = document.createElement("span");
-      text.textContent = " " + toTitleCase(p.orig);
+      text.textContent = " " + formatIngredientLabel(p.orig);
       li.appendChild(pill);
       li.appendChild(text);
       ul.appendChild(li);
@@ -2915,10 +3022,17 @@ function renderRecipes() {
     const stepsDiv = document.createElement("div");
     stepsDiv.className = "steps";
     const h4s = document.createElement("h4");
-    h4s.textContent = "Steps";
+    const totalSteps = (r.steps || []).length + 2; // prep + serve
+    h4s.textContent = `Steps (${totalSteps})`;
     stepsDiv.appendChild(h4s);
     const ol = document.createElement("ol");
-    for (const s of r.steps) {
+    const ingredientList = per.map((p) => toTitleCase(p.orig)).join(", ");
+    const detailedSteps = [
+      `Prep: Gather all ${per.length} ingredients (${ingredientList}). Measure and chop as needed.`,
+      ...(r.steps || []),
+      "Plate and serve immediately while fresh.",
+    ];
+    for (const s of detailedSteps) {
       const li = document.createElement("li");
       li.textContent = s;
       ol.appendChild(li);

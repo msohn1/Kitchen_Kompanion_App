@@ -32,10 +32,9 @@
             <thead>
               <tr>
                 <th class="chk-col"></th>
-                <th>Item</th>
+                <th class="sortable" data-sort="name">Item</th>
+                <th class="sortable" data-sort="category">Category</th>
                 <th class="num">Qty</th>
-                <th>Category</th>
-                <th>Source</th>
                 <th></th>
               </tr>
             </thead>
@@ -68,11 +67,9 @@
           <table class="inv-table" id="invTable">
             <thead>
               <tr>
-                <th>Item</th>
-                <th class="num">Qty</th>
-                <th>Unit</th>
-                <th>Category</th>
-                <th>Expiry</th>
+                <th data-sort="name" class="sortable">Item</th>
+                <th data-sort="category" class="sortable">Category</th>
+                <th data-sort="expiry" class="sortable">Expiry</th>
                 <th></th>
               </tr>
             </thead>
@@ -186,7 +183,25 @@
             </label>
             <label>
               <span>Unit</span>
-              <input name="unit" type="text" placeholder="e.g., L, pcs" />
+              <select name="unit" id="addItemUnit">
+                <option value="">None</option>
+                <option value="pcs">pcs</option>
+                <option value="oz">oz</option>
+                <option value="lb">lb</option>
+                <option value="g">g</option>
+                <option value="kg">kg</option>
+                <option value="ml">ml</option>
+                <option value="l">L</option>
+                <option value="cup">cup</option>
+                <option value="qt">qt</option>
+                <option value="gal">gal</option>
+                <option value="pack">pack</option>
+                <option value="box">box</option>
+                <option value="bottle">bottle</option>
+                <option value="bag">bag</option>
+                <option value="dozen">dozen</option>
+                <option value="other">Other</option>
+              </select>
             </label>
             <label>
               <span>Min qty</span>
@@ -353,7 +368,25 @@
           </label>
           <label>
             <span>Unit</span>
-            <input id="editItemUnit" name="unit" type="text" placeholder="e.g., L, pcs" />
+            <select id="editItemUnit" name="unit">
+              <option value="">None</option>
+              <option value="pcs">pcs</option>
+              <option value="oz">oz</option>
+              <option value="lb">lb</option>
+              <option value="g">g</option>
+              <option value="kg">kg</option>
+              <option value="ml">ml</option>
+              <option value="l">L</option>
+              <option value="cup">cup</option>
+              <option value="qt">qt</option>
+              <option value="gal">gal</option>
+              <option value="pack">pack</option>
+              <option value="box">box</option>
+              <option value="bottle">bottle</option>
+              <option value="bag">bag</option>
+              <option value="dozen">dozen</option>
+              <option value="other">Other</option>
+            </select>
           </label>
           <label>
             <span>Min qty</span>

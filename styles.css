@@ -204,10 +204,10 @@
   font-size: 16px;
 }
 .inv-table td {
-  padding: 10px;
+  padding: 8px 10px;
   border-top: 1px solid #e5e7eb;
   vertical-align: middle;
-  font-size: 16px;
+  font-size: 18px; /* larger item text for readability */
 }
 .inv-table td.editable-cell {
   cursor: pointer;
@@ -231,11 +231,6 @@
 }
 #shopTable td.editable-cell:hover {
   background: #fafafa;
-}
-/* Hide Unit column (3rd) in Inventory table to free space for actions */
-#invTable thead th:nth-child(3),
-#invTable td:nth-child(3) {
-  display: none;
 }
 .inv-table .num {
   text-align: right;
@@ -264,8 +259,6 @@
 
 /* category badge */
 .inv-table td .badge.cat {
-  background: #eef2ff;
-  color: var(--brand-700);
   font-weight: 600;
   margin-left: 6px;
   padding: 4px 10px;
@@ -274,8 +267,6 @@
 
 /* category badge override */
 .inv-table td .badge {
-  background: #eef2ff;
-  color: var(--brand-700);
   font-weight: 600;
   padding: 4px 10px;
   font-size: 13px;
@@ -283,42 +274,35 @@
 
 /* stacked badge layout */
 .name-line {
-  font-weight: 600;
-  margin-bottom: 6px;
-}
-.name-line.clickable {
-  cursor: pointer;
-  text-decoration: underline dotted;
-  text-underline-offset: 2px;
-}
-.badge-line {
-  display: flex;
-  gap: 12px;
+  font-weight: 700;
+  margin-bottom: 0; /* keep name and badges on one line */
+  font-size: 18px; /* emphasize item name */
+  display: inline-flex;
   align-items: center;
 }
-.badge-col {
-  flex: 1 1 0;
-  display: flex;
+.badge-inline {
+  display: inline-flex;
   gap: 8px;
+  align-items: center;
 }
-.badge-col.left {
-  justify-content: flex-start;
+.name-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
-.badge-col.right {
-  justify-content: flex-end;
-}
-
-/* ensure badges inside badge-line look good */
-.badge-line .badge {
-  display: inline-block;
-  padding: 4px 8px;
+.qty-pill {
+  background: #e5e7eb;
   border-radius: 999px;
+  padding: 4px 8px;
+  font-weight: 700;
+  font-size: 14px;
 }
 
 /* category column styling */
-td:nth-child(4) {
+.inv-table td:nth-child(2) {
   /* category column */
-  width: 90px;
+  width: 120px;
   text-align: left;
 }
 td.category {
@@ -326,9 +310,9 @@ td.category {
 }
 
 /* Expiry column: wider and prevent wrapping */
-.inv-table thead th:nth-child(5),
-.inv-table td:nth-child(5) {
-  width: 140px;
+.inv-table thead th:nth-child(3),
+.inv-table td:nth-child(3) {
+  width: 120px;
   white-space: nowrap;
 }
 
@@ -337,13 +321,12 @@ td.category {
   display: inline-block;
   padding: 4px 10px;
   border-radius: 999px;
-  background: #eef2ff;
-  color: var(--brand-700);
   font-weight: 600;
 }
 
 .action-cell {
-  width: 180px;
+  width: 320px;
+  white-space: nowrap;
 }
 .row-actions {
   display: flex;
@@ -351,9 +334,7 @@ td.category {
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
-}
-.row-actions .row-btn {
-  padding: 4px 8px;
+  flex-wrap: nowrap;
 }
 .primary-actions {
   display: none;
@@ -441,22 +422,34 @@ td.category {
   box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.08);
 }
 #shopTable .action-cell {
-  width: 200px;
+  width: 80px;
 }
 #shopTable .row-btn.small {
-  padding: 14px 18px;
-  font-size: 22px;
-  min-height: 56px;
-  min-width: 56px;
+  padding: 12px 14px;
+  font-size: 20px;
+  min-height: 50px;
+  min-width: 50px;
 }
-#shopTable thead th:nth-child(3) {
-  text-align: left;
+#shopTable thead th:nth-child(4) {
+  text-align: center;
 }
-
-/* Hide category column (4th) in Shopping table */
-#shopTable thead th:nth-child(4),
-#shopTable td:nth-child(4) {
-  display: none;
+#shopTable .row-actions {
+  justify-content: flex-end;
+  gap: 8px;
+}
+#shopTable .qty-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+#shopTable .qty-display {
+  min-width: 52px;
+  text-align: center;
+  font-weight: 700;
+  background: #f3f4f6;
+  border-radius: 10px;
+  padding: 6px 8px;
+  cursor: pointer;
 }
 
 /* Make category badges inside shop table use same category colors */
@@ -464,8 +457,6 @@ td.category {
   display: inline-block;
   padding: 4px 10px;
   border-radius: 999px;
-  background: #eef2ff;
-  color: var(--brand-700);
   font-weight: 600;
 }
 
@@ -536,52 +527,36 @@ td.category {
 .row-source-recipe {
   background: linear-gradient(180deg, rgba(255, 241, 242, 0.6), rgba(255, 255, 255, 0));
 }
-/* Per-category colors */
-.inv-table td.category .badge.cat-dairy,
-.inv-table td.category .badge.cat-dairy.cat {
+/* Per-category colors (shared by inventory and shopping) */
+.badge.cat-dairy {
   background: #fff4e6;
   color: #9a4d00;
 }
-.inv-table td.category .badge.cat-carb,
-.inv-table td.category .badge.cat-carb.cat {
+.badge.cat-carb {
   background: #f5f0ea;
   color: #7a4b2b;
 }
-.inv-table td.category .badge.cat-veggies,
-.inv-table td.category .badge.cat-veggies.cat {
+.badge.cat-veggies,
+.badge.cat-produce {
   background: #ecfdf5;
   color: #065f46;
 }
-.inv-table td.category .badge.cat-protein,
-.inv-table td.category .badge.cat-protein.cat {
+.badge.cat-protein,
+.badge.cat-meat {
   background: #f3e8ff;
   color: #5b21b6;
 }
-.inv-table td.category .badge.cat-condiment,
-.inv-table td.category .badge.cat-condiment.cat {
+.badge.cat-condiment {
   background: #e6fffa;
   color: #115e59;
 }
-.inv-table td.category .badge.cat-frozen,
-.inv-table td.category .badge.cat-frozen.cat {
+.badge.cat-frozen {
   background: #eef2ff;
   color: #1e3a8a;
 }
-.inv-table td.category .badge.cat-other,
-.inv-table td.category .badge.cat-other.cat {
+.badge.cat-other {
   background: #f3f4f6;
   color: #374151;
-}
-/* common synonyms */
-.inv-table td.category .badge.cat-produce,
-.inv-table td.category .badge.cat-produce.cat {
-  background: #ecfdf5;
-  color: #065f46;
-}
-.inv-table td.category .badge.cat-meat,
-.inv-table td.category .badge.cat-meat.cat {
-  background: #f3e8ff;
-  color: #5b21b6;
 }
 
 /* Row action buttons: compact, macOS-like */
@@ -602,8 +577,8 @@ td.category {
     transform 0.06s ease,
     box-shadow 0.06s ease,
     background 0.06s ease;
-  min-height: 40px;
-  min-width: 40px; /* larger tap target */
+  min-height: 48px;
+  min-width: 48px; /* larger tap target */
 }
 .row-btn:hover {
   transform: translateY(-1px);
@@ -614,17 +589,17 @@ td.category {
   box-shadow: 0 2px 4px rgba(2, 6, 23, 0.08);
 }
 .row-btn + .row-btn {
-  margin-left: 8px;
+  margin-left: 0;
 }
 
 /* Small numeric +/- style */
 .row-btn.small {
-  padding: 14px 18px;
+  padding: 14px 16px;
   border-radius: 10px;
   font-weight: 600;
-  font-size: 22px;
-  min-height: 56px;
-  min-width: 56px;
+  font-size: 20px;
+  min-height: 52px;
+  min-width: 52px;
 }
 
 /* Danger variant for Delete */
@@ -632,6 +607,44 @@ td.category {
   --btn-bg: #fff5f5;
   border-color: rgba(220, 38, 38, 0.12);
   color: var(--danger);
+}
+
+.qty-display {
+  min-width: 72px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.row-btn.ghost {
+  background: transparent;
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+th.sortable {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  padding-right: 18px;
+}
+th.sortable::after {
+  content: " ";
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 4px solid transparent;
+  border-top-color: #9ca3af;
+  opacity: 0.4;
+}
+th.sortable[data-sort-dir="asc"]::after {
+  border-bottom: 6px solid #0b3d91;
+  border-top: none;
+  opacity: 1;
+}
+th.sortable[data-sort-dir="desc"]::after {
+  border-top: 6px solid #0b3d91;
+  border-bottom: none;
+  opacity: 1;
 }
 
 .muted {
@@ -714,7 +727,8 @@ td.category {
   min-height: 44px;
 }
 .grid label span {
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 600;
   color: var(--muted);
 }
 .modal-actions {
@@ -828,7 +842,7 @@ td.category {
 .recipe-card {
   border: 1px solid #e5e7eb;
   border-radius: 12px;
-  margin: 14px 0; /* spacing between recipe cards */
+  margin: 8px 0; /* tighter spacing between recipe cards */
   padding: 12px;
   background-color: #fff;
   box-shadow: 0 6px 18px rgba(2, 6, 23, 0.04);
@@ -899,7 +913,7 @@ td.category {
   }
 
 .recipe-card.expanded .toggle-btn {
-  transform: rotate(45deg);
+  transform: none;
 }
 
 /* ensure ingredients/steps stack nicely on narrow cards */
@@ -912,6 +926,11 @@ td.category {
 .steps h4 {
   margin: 0 0 8px 0;
   font-size: 16px;
+}
+.ing-meta {
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 6px;
 }
 .ingredients ul,
 .steps ol {
