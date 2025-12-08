@@ -1,12 +1,13 @@
 :root {
   --bg: #f9fafb;
+    --keyboard-height: 0px;
   --text: #0f172a;
   --muted: #374151;
   --brand-700: #1e40af;
   --brand-800: #16358c;
   --brand-600: #0b3d91;
   --accent: #0b579d;
-  --tab: #fbff00;
+  --tab: #24BDFF;
   --danger: #dc2626;
   --white: #ffffff;
   --black: #000000;
@@ -39,13 +40,14 @@
 }
 
 .tabbar {
-  position: relative;
+  position: absolute;
   bottom: 0;
   left: 0;
-  width: 640px;
+  width: 100%;
   display: flex;
   background: var(--brand-700);
   height: 70px;
+  z-index: 800; /* sit below modal (modal uses z-index:1000) */
 }
 
 .tablink {
@@ -83,15 +85,15 @@
   height: 28px;
   display: block;
   margin: 0 auto;
-  /* Apply color filter to make icons follow currentColor (active state) */
-  filter: brightness(0) saturate(100%) invert(1);
+  /* Apply color filter to make icons use --tab color (24BDFF) even when inactive */
+  /* filter: brightness(0) saturate(100%) invert(0%) sepia(100%) saturate(1000%) hue-rotate(0deg) brightness(1) drop-shadow(0 0 0 var(--tab)); */
   opacity: 0.7;
 }
 
 .tablink.active .tab-icon {
   opacity: 1;
-  /* Bright yellow #fbff00 for active icons */
-  filter: brightness(0) saturate(100%) invert(98%) sepia(100%) saturate(7482%) hue-rotate(1deg) brightness(104%);
+  /* Use --tab color for active icons */
+  /* filter: brightness(0) saturate(100%) invert(0%) sepia(100%) saturate(1000%) hue-rotate(0deg) brightness(1) drop-shadow(0 0 0 var(--tab)); */
 }
 
 
@@ -662,6 +664,8 @@ td.category {
   border-radius: 16px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   padding: 16px;
+    transition: transform 0.25s ease, margin-bottom 0.25s ease;
+    will-change: transform;
 }
 .modal-head {
   display: flex;
@@ -877,6 +881,22 @@ td.category {
 .recipe-card.expanded .card-content {
   display: flex;
 }
+
+  .keyboard-open .modal.show .modal-card {
+    /* shift modal upward roughly half the keyboard height so form fields remain visible */
+    transform: translateY(calc(-1 * var(--keyboard-height) / 2));
+    margin-bottom: calc(var(--keyboard-height) / 2);
+  }
+
+  /* keyboard spacer element - fixed to viewport bottom but aligned to the app */
+  .keyboard-spacer {
+    position: fixed;
+    bottom: 0;
+    height: var(--keyboard-height);
+    background: transparent; /* change to rgba(...) to make visible for demos */
+    z-index: 700; /* sit below tabbar (800) */
+    pointer-events: none; /* don't block interactions */
+  }
 
 .recipe-card.expanded .toggle-btn {
   transform: rotate(45deg);

@@ -18,6 +18,130 @@ function openTab(tabName) {
 
 openTab("inventory");
 
+/* ---------- On-screen keyboard simulation (mobile) ---------- */
+(() => {
+  const root = document.documentElement;
+  let initialInnerHeight = window.innerHeight || document.documentElement.clientHeight;
+  let keyboardOpen = false;
+  let spacerEl = null;
+
+  function ensureSpacer() {
+    if (spacerEl) return spacerEl;
+    spacerEl = document.createElement('div');
+    spacerEl.id = 'keyboard-spacer';
+    spacerEl.className = 'keyboard-spacer';
+    document.body.appendChild(spacerEl);
+    return spacerEl;
+  }
+
+  function positionSpacer(px) {
+    const app = document.querySelector('.app');
+    const s = ensureSpacer();
+    s.style.height = px + 'px';
+    // align horizontally with the app container when possible
+    if (app) {
+      const r = app.getBoundingClientRect();
+      s.style.left = r.left + 'px';
+      s.style.width = r.width + 'px';
+      s.style.transform = 'none';
+    } else {
+      s.style.left = '50%';
+      s.style.transform = 'translateX(-50%)';
+      s.style.width = getComputedStyle(document.documentElement).getPropertyValue('--app-width') || '640px';
+    }
+    s.style.display = px > 0 ? 'block' : 'none';
+  }
+
+  function setKeyboardHeight(px) {
+    root.style.setProperty('--keyboard-height', px + 'px');
+    positionSpacer(px);
+    document.body.classList.add('keyboard-open');
+    keyboardOpen = true;
+  }
+
+  function clearKeyboard() {
+    root.style.setProperty('--keyboard-height', '0px');
+    if (spacerEl) spacerEl.style.display = 'none';
+    document.body.classList.remove('keyboard-open');
+    keyboardOpen = false;
+  }
+
+  // Update initial height if orientation or layout changes significantly
+  window.addEventListener('orientationchange', () => {
+    initialInnerHeight = window.innerHeight || document.documentElement.clientHeight;
+    // reposition spacer in case layout moved
+    if (keyboardOpen) positionSpacer(parseInt(getComputedStyle(root).getPropertyValue('--keyboard-height')) || 0);
+  });
+
+  // If viewport shrinks (typical when real keyboard shows on mobile), use that delta
+  window.addEventListener('resize', () => {
+    const nowH = window.innerHeight || document.documentElement.clientHeight;
+    const delta = Math.round(initialInnerHeight - nowH);
+    if (delta > 120) {
+      setKeyboardHeight(delta);
+    }
+    // reposition spacer to follow any layout changes
+    if (keyboardOpen) {
+      const val = parseInt(getComputedStyle(root).getPropertyValue('--keyboard-height')) || 0;
+      positionSpacer(val);
+    }
+  });
+
+  // Focus handling: only trigger when input is inside an open modal
+  document.addEventListener('focusin', (e) => {
+    const el = e.target;
+    if (!el) return;
+    const tag = (el.tagName || '').toUpperCase();
+    if (tag !== 'INPUT' && tag !== 'TEXTAREA' && !el.isContentEditable) return;
+    const modal = el.closest('.modal.show');
+    if (!modal) return; // only when editing inside modal
+
+    // compute keyboard height: prefer actual viewport change, otherwise fallback
+    const nowH = window.innerHeight || document.documentElement.clientHeight;
+    const delta = Math.round(initialInnerHeight - nowH);
+    let h = delta > 120 ? delta : Math.min(360, Math.round(initialInnerHeight * 0.38));
+    setKeyboardHeight(h);
+
+    // Make sure the focused input is visible in modal
+    setTimeout(() => {
+      try {
+        el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        // reposition spacer after any possible layout shift
+        positionSpacer(h);
+      } catch (err) {
+        // ignore
+      }
+    }, 60);
+  });
+
+  document.addEventListener('focusout', (e) => {
+    const el = e.target;
+    if (!el) return;
+    const tag = (el.tagName || '').toUpperCase();
+    if (tag !== 'INPUT' && tag !== 'TEXTAREA' && !el.isContentEditable) return;
+
+    // small debounce to allow focus to move between inputs inside modal
+    setTimeout(() => {
+      const active = document.activeElement;
+      if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable) && active.closest('.modal.show')) {
+        return; // still focused inside modal
+      }
+      clearKeyboard();
+    }, 150);
+  });
+
+  // When modals are hidden, clear keyboard state
+  const modals = document.querySelectorAll('.modal');
+  modals.forEach((m) => {
+    const obs = new MutationObserver(() => {
+      if (!m.classList.contains('show')) {
+        clearKeyboard();
+      }
+    });
+    obs.observe(m, { attributes: true, attributeFilter: ['class'] });
+  });
+})();
+
 const profileImg = document.getElementById("profileImg");
 const alertEl = document.getElementById("alert");
 if (profileImg && alertEl) {
