@@ -779,10 +779,27 @@ th.sortable[data-sort-dir="desc"]::after {
 }
 
 .card-header {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr 140px auto auto auto;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+}
+.card-header.recipe-grid {
+  grid-template-columns: 1fr 140px 1fr auto auto;
+}
+.diet-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-height: 28px;
+  justify-content: flex-start;
+}
+.card-title {
+  min-width: 0;
+}
+.card-title h3 {
+  margin: 0;
+  font-size: 18px;
 }
 
 .card-header h3 {
@@ -808,9 +825,8 @@ th.sortable[data-sort-dir="desc"]::after {
 .card-header .meta {
   color: var(--muted);
   font-size: 14px;
-  text-align: right;
+  text-align: left;
   white-space: nowrap;
-  margin-left: auto; /* push to right edge */
 }
 
 .card-content {
@@ -1006,8 +1022,8 @@ th.sortable[data-sort-dir="desc"]::after {
   margin-left: 8px;
 }
 .diet-badge.diet-vegetarian {
-  background: #ecfdf5;
-  color: #065f46;
+  background: #d9f99d;
+  color: #365314;
 }
 .diet-badge.diet-vegan {
   background: #ecfdf5;

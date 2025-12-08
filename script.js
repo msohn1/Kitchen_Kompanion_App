@@ -3002,18 +3002,20 @@ function renderRecipes() {
     const card = document.createElement("div");
     card.className = "recipe-card";
     const head = document.createElement("div");
-    head.className = "card-header";
-    const left = document.createElement("div");
-    left.style.display = "flex";
-    left.style.alignItems = "center";
-    left.style.gap = "8px";
+    head.className = "card-header recipe-grid";
+    const titleWrap = document.createElement("div");
+    titleWrap.className = "card-title";
     const h3 = document.createElement("h3");
     // Create short title (remove "with ..." portion) for collapsed view
     const shortTitle = r.title.includes(" with ") 
       ? r.title.split(" with ")[0] 
       : r.title;
     h3.innerHTML = `<span class="title-short">${shortTitle}</span><span class="title-full">${r.title}</span>`;
-    left.appendChild(h3);
+    titleWrap.appendChild(h3);
+    head.appendChild(titleWrap);
+
+    const dietRow = document.createElement("div");
+    dietRow.className = "diet-row";
     // diet badges (skip "vegetarian" if "vegan" is present)
     if (Array.isArray(r.diet)) {
       const isVegan = r.diet.some((d) => String(d).toLowerCase() === "vegan");
@@ -3024,10 +3026,10 @@ function renderRecipes() {
         const db = document.createElement("span");
         db.className = "diet-badge diet-" + dLower.replace(/[^a-z0-9]+/g, "-");
         db.textContent = d.charAt(0).toUpperCase() + d.slice(1);
-        left.appendChild(db);
+        dietRow.appendChild(db);
       }
     }
-    head.appendChild(left);
+    head.appendChild(dietRow);
     const meta = document.createElement("div");
     meta.className = "meta";
     meta.textContent = `${r.match.availableCount}/${r.match.total} ingredients available • ${r.time} min`;
