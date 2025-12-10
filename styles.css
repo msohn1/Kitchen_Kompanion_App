@@ -747,6 +747,8 @@ th.sortable[data-sort-dir="desc"]::after {
   border-radius: 10px;
   min-height: 44px;
   font-size: 16px;
+  width: 100%;
+  box-sizing: border-box;
 }
 /* Modal selects should match toolbar/select styling */
 .grid select,
@@ -757,6 +759,8 @@ th.sortable[data-sort-dir="desc"]::after {
   background: #fff;
   font-size: 16px;
   min-height: 44px;
+  width: 100%;
+  box-sizing: border-box;
 }
 .grid label span {
   font-size: 15px;
