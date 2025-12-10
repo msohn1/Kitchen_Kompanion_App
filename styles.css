@@ -259,6 +259,10 @@
   background: #fee2e2;
   color: #991b1b;
 }
+.badge.expired {
+  background: #7f1d1d;
+  color: #ffffff;
+}
 
 /* category badge */
 .inv-table td .badge.cat {
@@ -425,7 +429,7 @@ td.category {
   box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.08);
 }
 #shopTable .action-cell {
-  width: 220px;
+  width: auto;
 }
 #shopTable .row-btn.small {
   padding: 12px 14px;
@@ -433,17 +437,38 @@ td.category {
   min-height: 50px;
   min-width: 50px;
 }
+#shopTable td.num.qty-cell {
+  text-align: right;
+  white-space: nowrap;
+  width: 5%;
+}
+#shopTable td.num.qty-cell,
+#shopTable td.action-cell {
+  padding: 4px;
+}
+#shopTable td.action-cell {
+  width: 1%;
+  white-space: nowrap;
+}
+#shopTable thead th:nth-child(4),
+#shopTable td:nth-child(4),
+#shopTable thead th:nth-child(5),
+#shopTable td:nth-child(5) {
+  width: auto;
+}
 #shopTable thead th:nth-child(4) {
   text-align: center;
 }
 #shopTable .row-actions {
   justify-content: flex-end;
-  gap: 6px;
+  gap: 0;
+  align-items: center;
 }
 #shopTable .qty-wrap {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  justify-content: center;
 }
 #shopTable .qty-display {
   min-width: 52px;

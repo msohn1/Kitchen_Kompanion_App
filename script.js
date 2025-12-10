@@ -338,9 +338,16 @@ function formatDateShort(iso) {
 function isLow(item) {
   return Number(item.qty) <= Number(item.minQty);
 }
-function isExpiring(item) {
+function isExpired(item) {
   const d = daysUntil(item.expiry);
-  return typeof d === "number" && d <= EXPIRING_DAYS; // within EXPIRING_DAYS (or overdue)
+  return typeof d === "number" && d < 0;
+}
+function isExpiringSoon(item) {
+  const d = daysUntil(item.expiry);
+  return typeof d === "number" && d >= 0 && d <= EXPIRING_DAYS;
+}
+function isExpiring(item) {
+  return isExpired(item) || isExpiringSoon(item); // within EXPIRING_DAYS or overdue
 }
 function passesFilter(item) {
   if (currentFilter === "low" && !isLow(item)) return false;
@@ -465,7 +472,12 @@ function renderInventory() {
 
     const badgeInline = document.createElement("div");
     badgeInline.className = "badge-inline";
-    if (isExpiring(it)) {
+    if (isExpired(it)) {
+      const b2 = document.createElement("span");
+      b2.className = "badge expired";
+      b2.textContent = "Expired";
+      badgeInline.appendChild(b2);
+    } else if (isExpiringSoon(it)) {
       const b2 = document.createElement("span");
       b2.className = "badge exp";
       b2.textContent = "Expiring";
