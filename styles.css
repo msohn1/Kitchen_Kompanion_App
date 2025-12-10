@@ -328,7 +328,7 @@ td.category {
 }
 
 .action-cell {
-  width: 320px;
+  width: 220px;
   white-space: nowrap;
 }
 .row-actions {
@@ -336,7 +336,7 @@ td.category {
   flex-direction: row;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: nowrap;
 }
 .primary-actions {
@@ -425,7 +425,7 @@ td.category {
   box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.08);
 }
 #shopTable .action-cell {
-  width: 80px;
+  width: 220px;
 }
 #shopTable .row-btn.small {
   padding: 12px 14px;
@@ -438,7 +438,7 @@ td.category {
 }
 #shopTable .row-actions {
   justify-content: flex-end;
-  gap: 8px;
+  gap: 6px;
 }
 #shopTable .qty-wrap {
   display: inline-flex;
@@ -621,6 +621,10 @@ td.category {
 .row-btn.ghost {
   background: transparent;
   border-color: rgba(15, 23, 42, 0.12);
+  min-height: 52px;
+  min-width: 52px;
+  font-size: 20px;
+  font-weight: 600;
 }
 
 th.sortable {
